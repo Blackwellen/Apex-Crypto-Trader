@@ -33,6 +33,7 @@ export class AptosChainAdapter implements ChainAdapter {
   async getTransactionStatus(chainId: string, hash: string): Promise<TxStatus> {
     const c = this.d.clientFor(chainId);
     const lookup = await c.getTransactionByHash(hash);
+    if (lookup.kind === 'not_found') return { state: 'unknown', detail: 'hash not found on this node (reconcile with expiration + sequence before retrying)' };
     const li = await c.ledgerInfo();
     const s = resolveStatus({ lookup, txSequenceNumber: (1n << 64n) - 1n, expirationTimestampSecs: 0n, ledgerTimestampUsec: li.ledgerTimestampUsec, accountSequenceNumber: 0n });
     if (s.state === 'final') return { state: 'final', detail: `version ${s.version}` };

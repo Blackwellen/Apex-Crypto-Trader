@@ -124,7 +124,6 @@ def breakout_volatility(stage: Stage = Stage.RESEARCH, entry_w: int = 96, exit_w
 def statistical_pairs(stage: Stage = Stage.RESEARCH, a: str = "ETH", b: str = "LINK", window: int = 240, z_in: float = 2.0, z_out: float = 0.5) -> StrategyDefinition:
     """Long-only relative value: hold whichever leg is cheap vs the rolling hedge-ratio spread (spot cannot short)."""
     def feats(p: Panel):
-        la, lb = np.log(p.close), np.log(p.close)
         out = {"pair_z": np.full(p.close.shape, np.nan)}
         if a in p.assets and b in p.assets:
             ia, ib = p.assets.index(a), p.assets.index(b)

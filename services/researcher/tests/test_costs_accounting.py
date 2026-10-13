@@ -107,8 +107,8 @@ def test_account_buy_sell_conserves(qty, px, fee):
 def test_delisted_asset_forced_writeoff_and_survivorship_effect(ds_rug):
     """Holding rugged memes loses money when delisted assets are in the dataset; dropping them hides that loss."""
     from researcher.data.synthetic import SyntheticParams, generate
-    memes_only = lambda ctx: SleeveOutput({a: 1.0 for i, a in enumerate(ctx.assets) if ctx.alive[i] and a.startswith("MEME") and ctx.features["age"][ctx.t, i] >= 1})
-    s = StrategyDefinition("memes", "0", Stage.RESEARCH, "buy every live meme", lambda m: True, frozenset(Regime), ("age",), common_features, memes_only, CapitalRequest(1.0, 1.0))
+    from researcher.strategies.probes import buy_every_live_meme
+    s = buy_every_live_meme()
     full = ds_rug
     surv = generate(SyntheticParams(seed=2, n_bars=3000, include_delisted=False))
     assert full.survivorship.includes_delisted and full.survivorship.delisted_assets_in_dataset > 0

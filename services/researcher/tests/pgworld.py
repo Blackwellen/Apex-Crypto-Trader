@@ -51,8 +51,21 @@ def fresh_db(apply_extra: list[Path] | None = None) -> tuple[str, str]:
     url = ADMIN_URL.rsplit("/", 1)[0] + "/" + name
     subprocess.run(["psql", url, "-q", "-v", "ON_ERROR_STOP=1", "-f", str(REPO / "infra/local/auth_shim.sql")],
                    check=True, capture_output=True)
-    subprocess.run([str(REPO / "packages/db/migrate.sh")], check=True, capture_output=True,
-                   env={**os.environ, "DATABASE_URL": url})
+    last = None
+    for attempt in range(3):                      # other workers may be editing migrations/*.sql concurrently; retry on a clean DB
+        try:
+            subprocess.run([str(REPO / "packages/db/migrate.sh")], check=True, capture_output=True, text=True, env={**os.environ, "DATABASE_URL": url})
+            last = None
+            break
+        except subprocess.CalledProcessError as e:
+            last = e
+            with psycopg.connect(ADMIN_URL, autocommit=True) as a:
+                a.execute(f"drop database {name} with (force)")
+                a.execute(f"create database {name}")
+            subprocess.run(["psql", url, "-q", "-v", "ON_ERROR_STOP=1", "-f", str(REPO / "infra/local/auth_shim.sql")], check=True, capture_output=True)
+            import time; time.sleep(3)
+    if last is not None:
+        raise RuntimeError(f"migrate.sh failed 3x: {last.stderr[-600:]}")
     for extra in apply_extra or []:
         subprocess.run(["psql", url, "-q", "-v", "ON_ERROR_STOP=1", "-f", str(extra)], check=True, capture_output=True)
     return url, name

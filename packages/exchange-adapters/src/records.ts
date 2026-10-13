@@ -11,7 +11,7 @@ export const venueRecords: VenueRecord[] = [
   {
     id: 'coinbase-advanced-public', name: 'Coinbase Advanced Trade (public market data only)', kind: 'public-market-data',
     ukAvailability: 'UNVERIFIED', ukAvailabilityEvidence: [FCA_CRYPTO_URL, FCA_REGISTER_URL],
-    capabilities: { listMarkets: 'READ_ONLY', getOrderBook: 'READ_ONLY', level2Stream: 'PENDING', placeOrder: 'UNSUPPORTED', balances: 'UNSUPPORTED', withdraw: 'UNSUPPORTED' },
+    capabilities: { listMarkets: 'READ_ONLY', getOrderBook: 'READ_ONLY', level2Stream: 'READ_ONLY', placeOrder: 'UNSUPPORTED', balances: 'UNSUPPORTED', withdraw: 'UNSUPPORTED' },
     docs: ['https://docs.cdp.coinbase.com/coinbase-app/advanced-trade-apis/rest-api', 'https://docs.cdp.coinbase.com/coinbase-app/advanced-trade-apis/websocket/websocket-channels'],
     liveTradingCode: false, verifiedAt: '2026-10-13', evidenceRef: 'docs/evidence/chains-b-live-reads.md#coinbase',
   },

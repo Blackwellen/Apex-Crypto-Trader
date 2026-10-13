@@ -11,6 +11,8 @@ import uuid
 
 import psycopg
 
+from .jsonutil import json_safe
+
 
 class WorkspaceNotFound(Exception):
     pass
@@ -28,6 +30,6 @@ def record_simulation_run(url: str, workspace_id: str, kind: str, params: dict, 
             raise WorkspaceNotFound(workspace_id)
         rid = c.execute(
             "insert into simulation_runs(workspace_id, kind, params, data_provenance, metrics, status) values (%s,%s,%s::jsonb,%s,%s::jsonb,%s) returning id::text",
-            (workspace_id, kind, json.dumps(params, default=str), data_provenance, json.dumps(metrics, default=str), status)).fetchone()[0]
+            (workspace_id, kind, json.dumps(json_safe(params), default=str), data_provenance, json.dumps(json_safe(metrics), default=str), status)).fetchone()[0]
         c.commit()
     return rid

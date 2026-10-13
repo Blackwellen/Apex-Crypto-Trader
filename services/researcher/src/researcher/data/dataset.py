@@ -42,8 +42,7 @@ class SurvivorshipDeclaration:
         if self.includes_delisted is None:
             return "UNDECLARED"
         if self.includes_delisted:
-            return "NOT_FLAGGED_DELISTED_INCLUDED" if self.delisted_assets_in_dataset > 0 else \
-                "DECLARED_INCLUDED_BUT_ZERO_DELISTED_PRESENT"
+            return "DELISTED_INCLUDED" if self.delisted_assets_in_dataset > 0 else "DECLARED_INCLUDED_BUT_NONE_PRESENT"
         return "SURVIVORSHIP_BIAS_PRESENT"
 
 

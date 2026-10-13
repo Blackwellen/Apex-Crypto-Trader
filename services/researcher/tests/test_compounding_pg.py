@@ -8,7 +8,7 @@ import uuid
 
 import psycopg
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, event, given, settings
 from hypothesis import strategies as st
 
 from pgworld import drop_db, fresh_db, pg_available, seed_world
@@ -76,6 +76,7 @@ def test_python_mirror_equals_postgres_bit_for_bit(world, realized, deficit, pol
         except psycopg.errors.RaiseException as e:
             sql_row, sql_def, bal, sql_err = None, None, None, str(e).splitlines()[0]
         c.rollback()
+    event(f"outcome={'error:' + py_err if py_err else ('distributed' if py.eligible else 'nothing_eligible')}")
     if py_err or sql_err:
         assert py_err is not None and sql_err is not None, f"error mismatch: python={py_err!r} sql={sql_err!r}"
         assert py_err in sql_err, f"different errors: python={py_err!r} sql={sql_err!r}"
@@ -90,7 +91,6 @@ def test_insufficient_available_balance_matches_sql():
     try:
         w = seed_world(url, name, funds=100)               # only 100 units available in the bucket
         pol = WaterfallPolicy(4000, 3500, 1500, 1000, 1000)
-        py = None
         with pytest.raises(WaterfallError, match="insufficient available"):
             apply_waterfall(1000, 0, pol, available=100)
         with psycopg.connect(url) as c:

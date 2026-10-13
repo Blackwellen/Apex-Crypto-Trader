@@ -13,6 +13,7 @@ from .backtest.costs import PRESETS
 from .backtest.engine import BacktestConfig, SleeveSpec, run_backtest
 from .compounding import TargetPlan, WaterfallError, WaterfallPolicy, apply_waterfall, simulate_compounding, statistical_forecast
 from .data.synthetic import SyntheticParams, generate
+from .jsonutil import json_safe
 from .db import WorkspaceNotFound, database_url, record_simulation_run
 from .llm import DisabledProvider, ModelGateway, ModelProvider, provider_from_env
 from .provenance import DataProvenance
@@ -102,7 +103,7 @@ def create_app(provider: ModelProvider | None = None) -> FastAPI:
                     raise HTTPException(404, "workspace not found")
                 except ValueError:
                     raise HTTPException(422, "workspace_id is not a UUID")
-        return out
+        return json_safe(out)
 
     @app.post("/compounding/simulate")
     def compounding(req: CompoundingReq) -> dict:
@@ -123,7 +124,7 @@ def create_app(provider: ModelProvider | None = None) -> FastAPI:
             out["statistical_forecast"] = statistical_forecast(np.array(req.forecast_returns), req.forecast_horizon_trades,
                                                                DataProvenance(req.forecast_provenance), max(req.initial_equity, 1),
                                                                validated_empirical=req.forecast_validated)
-        return out
+        return json_safe(out)
 
     @app.post("/token-safety/evaluate")
     def token_safety(findings: dict, strategy: str = "default", position_usd: float = 1000.0, expected_gross_edge_bps: float = 0.0,
