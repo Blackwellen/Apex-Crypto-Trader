@@ -234,7 +234,7 @@ begin
       jsonb_build_object('account', q_ext, 'amount', (-p_quote)::text),
       jsonb_build_object('account', q_av, 'amount', (p_quote - p_fee)::text),
       jsonb_build_object('account', q_fee, 'amount', p_fee::text)), null, jsonb_build_object('fill', fid));
-    cost_part := (pos.cost_basis_quote * p_qty) / pos.qty;                      -- exact: truncation favours conservative (lower) cost removal
+    cost_part := div(pos.cost_basis_quote * p_qty, pos.qty);                      -- exact: truncation favours conservative (lower) cost removal
     pnl := (p_quote - p_fee) - cost_part;
     update positions set qty = qty - p_qty, cost_basis_quote = cost_basis_quote - cost_part, realized_pnl_quote = realized_pnl_quote + pnl
      where bucket_id=i.bucket_id and wallet_chain_account_id=wca and base_asset=i.base_asset and quote_asset=i.quote_asset;

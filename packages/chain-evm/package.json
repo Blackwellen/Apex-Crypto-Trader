@@ -1,0 +1,16 @@
+{
+  "name": "@apex/chain-evm",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p .",
+    "test": "node --test --test-concurrency=1 --experimental-transform-types --no-warnings test/*.test.ts"
+  },
+  "dependencies": {
+    "@apex/contracts": "workspace:*", "@noble/hashes": "^1.8.0"
+  },
+  "devDependencies": { "typescript": "^5.8.0", "@types/node": "^22.0.0", "pg": "^8.13.0" }
+}

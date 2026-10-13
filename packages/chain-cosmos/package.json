@@ -1,0 +1,11 @@
+{
+  "name": "@apex/chain-cosmos",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": { "typecheck": "tsc --noEmit -p .", "test": "node --test --experimental-transform-types src/*.test.ts" },
+  "dependencies": { "@apex/contracts": "workspace:*" },
+  "devDependencies": { "typescript": "^5.8.0", "@types/node": "^22.0.0" }
+}

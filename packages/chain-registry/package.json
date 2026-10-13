@@ -1,0 +1,16 @@
+{
+  "name": "@apex/chain-registry",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p .",
+    "test": "node --test --test-concurrency=1 --experimental-transform-types --no-warnings test/*.test.ts"
+  },
+  "dependencies": {
+    "@apex/contracts": "workspace:*"
+  },
+  "devDependencies": { "typescript": "^5.8.0", "@types/node": "^22.0.0", "@apex/chain-evm": "workspace:*", "@apex/chain-solana": "workspace:*", "@apex/chain-sui": "workspace:*", "@apex/chain-aptos": "workspace:*" }
+}

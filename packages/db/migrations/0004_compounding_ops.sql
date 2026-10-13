@@ -115,10 +115,10 @@ begin
     return xid;
   end if;
   -- step 4/6: integer basis-point split; rounding remainder always goes to reinvest (stays in bucket)
-  tax := elig * pol.tax_provision_bps / 10000;
-  vt  := (elig - tax) * pol.vault_bps / 10000;
-  cx  := (elig - tax) * pol.cross_bucket_bps / 10000;
-  rs  := (elig - tax) * pol.reserve_bps / 10000;
+  tax := div(elig * pol.tax_provision_bps, 10000);
+  vt  := div((elig - tax) * pol.vault_bps, 10000);
+  cx  := div((elig - tax) * pol.cross_bucket_bps, 10000);
+  rs  := div((elig - tax) * pol.reserve_bps, 10000);
   rv  := elig - tax - vt - cx - rs;
   wca := i.wallet_chain_account_id;
   av := ledger_account(e.workspace_id, e.environment, e.bucket_id, wca, e.quote_asset, 'available');

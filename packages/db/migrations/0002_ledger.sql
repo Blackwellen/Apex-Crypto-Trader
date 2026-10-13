@@ -121,6 +121,7 @@ begin
   -- insert in account-id order => consistent lock order => no deadlocks between competing entries
   for p in select (x->>'account')::uuid as account, (x->>'amount')::numeric as amount
            from jsonb_array_elements(postings) x order by (x->>'account')::uuid loop
+    continue when p.amount = 0;                             -- zero legs (e.g. zero fee) are not postings
     select * into acc from ledger_accounts where id = p.account and workspace_id = ws;
     if not found then raise exception 'account % not in workspace', p.account using errcode='P0001'; end if;
     insert into ledger_postings(entry_id, account_id, asset_id, amount) values (eid, p.account, acc.asset_id, p.amount);
