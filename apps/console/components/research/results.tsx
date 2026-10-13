@@ -35,7 +35,7 @@ export function MetricsTable({ report }: { report: any }) {
   return (
     <Card title="Metrics with uncertainty">
       {!ok && <p className="mb-3 rounded-lg bg-warn-soft p-3 text-[13px] text-warn">Not enough observations for intervals ({u?.n_obs ?? 'unknown'} obs). Point estimates below must not be read as findings.</p>}
-      <div className="overflow-x-auto rounded-xl border border-line"><table className="w-full min-w-[560px] text-left text-[13px]"><caption className="sr-only">Point estimates with {level ?? 'n/a'} percent bootstrap confidence intervals</caption>
+      <div tabIndex={0} role="region" aria-label="Metrics table, scrollable" className="overflow-x-auto rounded-xl border border-line"><table className="w-full min-w-[560px] text-left text-[13px]"><caption className="sr-only">Point estimates with {level ?? 'n/a'} percent bootstrap confidence intervals</caption>
         <thead className="bg-[#f6f8fb] text-[11px] uppercase tracking-wider text-muted"><tr><th scope="col" className="px-4 py-3">Metric</th><th scope="col" className="px-4 py-3 text-right">Point</th><th scope="col" className="px-4 py-3 text-right">{level ?? 'n/a'}% interval</th><th scope="col" className="px-4 py-3">Range</th><th scope="col" className="px-4 py-3">Reading</th></tr></thead>
         <tbody>{CI_ROWS.map(([k, name, fmt]) => { const m = u?.[k]; const iv = ok ? interval(m) : null; const z = straddlesZero(iv);
           return <tr key={k} className="border-t border-line"><th scope="row" className="px-4 py-3 font-medium">{name}</th>

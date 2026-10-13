@@ -170,7 +170,7 @@ export function DataTable<T extends { id?: string }>({ rows, cols, caption, sear
         <span className="ml-auto text-[12px] text-muted" aria-live="polite">{shown.length} of {rows.length}</span>
       </div>
       {shown.length === 0 ? (empty ?? <EmptyState title="No matching rows" hint="Adjust your search or filters." />) : (
-        <div className="overflow-x-auto rounded-xl border border-line">
+        <div tabIndex={0} role="region" aria-label={`${caption} (scrollable table)`} className="overflow-x-auto rounded-xl border border-line">
           <table className="w-full min-w-[560px] text-left text-[13px]"><caption className="sr-only">{caption}</caption>
             <thead className="bg-[#f6f8fb] text-[11px] uppercase tracking-wider text-muted"><tr>{cols.map((c) => (
               <th key={c.key} scope="col" aria-sort={sort?.k === c.key ? (sort.d === 1 ? 'ascending' : 'descending') : 'none'} className={cx('px-4 py-3 font-semibold', c.align === 'right' && 'text-right')}>

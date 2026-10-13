@@ -52,6 +52,7 @@ export function BacktestWizard() {
 
   return (
     <Card title="New backtest">
+      {!reachable && !health.isLoading && <p role="alert" className="mb-4 rounded-xl border border-[#f3c9c5] bg-bad-soft p-3 text-[13px] font-semibold text-bad">Researcher NOT REACHABLE: Run is disabled. You can still review the wizard, but nothing can be executed until the service answers.</p>}
       <Stepper steps={STEPS} current={step} />
       {step === 0 && (
         <div className="space-y-4">
@@ -116,7 +117,7 @@ export function BacktestWizard() {
       <div className="mt-6 flex flex-wrap justify-between gap-2">
         <Button onClick={() => setStep(step - 1)} disabled={step === 0 || run.isPending}>Back</Button>
         {step < STEPS.length - 1
-          ? <Button variant="primary" onClick={() => setStep(step + 1)} disabled={stepErr.length > 0}>Next</Button>
+          ? <div className="flex gap-2">{!reachable && <Button variant="primary" disabled>Run backtest</Button>}<Button variant="primary" onClick={() => setStep(step + 1)} disabled={stepErr.length > 0}>Next</Button></div>
           : <Button variant="primary" onClick={submit} busy={run.isPending} disabled={!!blocked}>Run backtest</Button>}
       </div>
     </Card>

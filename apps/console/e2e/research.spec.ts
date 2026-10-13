@@ -77,7 +77,6 @@ test('research: when the researcher is NOT REACHABLE the page says so and Run is
   await page.goto('/research');
   await expect(page.getByText('Researcher NOT REACHABLE')).toBeVisible();
   await page.getByRole('tab', { name: 'New backtest' }).click();
-  for (let i = 0; i < 4; i++) await page.getByRole('button', { name: 'Next', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Run backtest' })).toBeDisabled();
   await expect(page.getByText('Researcher NOT REACHABLE: Run is disabled.')).toBeVisible();
 });

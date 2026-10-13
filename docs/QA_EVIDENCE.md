@@ -21,3 +21,5 @@ Every row is produced by scripts/evidence.sh from a real run; logs are stored un
 | 2026-10-13T19:51:13Z | chains-a: chain-aptos | **PASS** | bd5fe10 | 74 | `pnpm --filter @apex/chain-aptos test` | docs/evidence/runs/20261013T195113Z-chains_a__chain_aptos.log |
 | 2026-10-13T19:51:22Z | db: full suite incl. all migrations | **FAIL** | bd5fe10 | 77 | `pnpm --filter @apex/db test` | docs/evidence/runs/20261013T195122Z-db__full_suite_incl__all_migrations.log |
 | 2026-10-13T19:52:02Z | db: full suite incl. all migrations | **FAIL** | bd5fe10 | 81 | `pnpm --filter @apex/db test` | docs/evidence/runs/20261013T195202Z-db__full_suite_incl__all_migrations.log |
+| 2026-10-13T19:52:33Z | db: full suite incl. all migrations | **PASS** | 754197b | 1 | `pnpm --filter @apex/db test` | docs/evidence/runs/20261013T195234Z-db__full_suite_incl__all_migrations.log |
+| 2026-10-13T19:52:59Z | db: full suite incl. all migrations | **PASS** | 754197b | 8 | `pnpm --filter @apex/db test` | docs/evidence/runs/20261013T195259Z-db__full_suite_incl__all_migrations.log |

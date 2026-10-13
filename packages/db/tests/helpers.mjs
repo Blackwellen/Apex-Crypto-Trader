@@ -18,6 +18,7 @@ export async function freshDb(name = 'apex_t_' + Math.random().toString(36).slic
   execFileSync('psql', [url, '-q', '-v', 'ON_ERROR_STOP=1', '-f', path.join(here, '../../../infra/local/auth_shim.sql')], { stdio: 'pipe' });
   execFileSync(path.join(here, '../migrate.sh'), [], { env: { ...process.env, DATABASE_URL: url }, stdio: 'pipe' });
   const pool = new pg.Pool({ connectionString: url, max: 120 });
+  pool.on('error', () => {}); // idle-client errors during teardown are not test failures
   return {
     url, name, pool,
     /** run fn in a transaction as an authenticated end user (RLS applies, role = authenticated) */
