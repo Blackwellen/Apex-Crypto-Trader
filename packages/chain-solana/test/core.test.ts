@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
   base58Encode, base58Decode, validateSolanaAddress, quoteSolanaFee, priorityFeeLamports, boundedJitoTip, JitoTipRefused, setComputeUnitLimitData, setComputeUnitPriceData,
-  rentExemptMinimum, SYSTEM_ACCOUNT_RENT_FLOOR, ataCreationReserve, ataAccountLen, computeLamportsReserve, spendableLamports,
+  rentExemptMinimum, SYSTEM_ACCOUNT_RENT_FLOOR, LEGACY_RENT, OBSERVED_RENT_2026_10_13, rentParamsFromNode, ataCreationReserve, ataAccountLen, computeLamportsReserve, spendableLamports,
   parseMint, analyzeMint, MintParseError, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, calculateTransferFee, netReceived, activeTransferFee,
 } from '../src/index.ts';
 
@@ -50,12 +50,22 @@ test('compute budget instruction data encoding', () => {
   assert.throws(() => setComputeUnitLimitData(2_000_000n));
 });
 
-test('rent: system floor 890_880; SPL token acct 2_039_280; Token-2022 ATA 170 bytes = 2_074_080 (matches a real mainnet account)', () => {
-  assert.equal(SYSTEM_ACCOUNT_RENT_FLOOR(), 890_880n);
-  assert.equal(rentExemptMinimum(165), 2_039_280n);
+test('rent (LEGACY schedule fallback): 890_880 system floor; 2_039_280 for 165 bytes; Token-2022 ATA 170 bytes = 2_074_080 (a real pre-change mainnet account)', () => {
+  assert.equal(SYSTEM_ACCOUNT_RENT_FLOOR(LEGACY_RENT), 890_880n);
+  assert.equal(rentExemptMinimum(165, LEGACY_RENT), 2_039_280n);
   assert.equal(ataAccountLen('token-2022', []).len, 170);
-  assert.equal(rentExemptMinimum(170), 2_074_080n);
-  const real = fx('getLatestBlockhash.json'); assert.ok(real.result); // fixture sanity
+  assert.equal(rentExemptMinimum(170, LEGACY_RENT), 2_074_080n);
+  assert.equal(SYSTEM_ACCOUNT_RENT_FLOOR(), 890_880n, 'conservative default = legacy (over-reserve)');
+});
+test('rent: live node schedule (recorded 2026-10-13: 0B=650240, 165B=1488440, 170B=1513840) is 5080 lamports/byte and is DERIVED, not assumed', async () => {
+  const recorded: Record<number, bigint> = { 0: 650_240n, 82: 1_066_800n, 165: 1_488_440n, 170: 1_513_840n };
+  const p = await rentParamsFromNode({ getMinimumBalanceForRentExemption: async (n: number) => recorded[n]! });
+  assert.deepEqual(p, OBSERVED_RENT_2026_10_13);
+  for (const [len, v] of Object.entries(recorded)) assert.equal(rentExemptMinimum(Number(len), p), v);
+  assert.ok(rentExemptMinimum(165, p) < rentExemptMinimum(165, LEGACY_RENT), 'the legacy default over-reserves');
+  await assert.rejects(() => rentParamsFromNode({ getMinimumBalanceForRentExemption: async (n: number) => (n === 0 ? 650_240n : 999n) }), /not linear/);
+  await assert.rejects(() => rentParamsFromNode({ getMinimumBalanceForRentExemption: async () => 100n }), /multiple of/);
+  assert.equal(ataCreationReserve({ ataExists: false, program: 'token-2022', rent: p }).lamports, 1_513_840n);
 });
 test('ATA reserve: 0 if exists; transfer-fee mint needs TransferFeeAmount space; confidential flagged unmodelled', () => {
   assert.equal(ataCreationReserve({ ataExists: true, program: 'spl-token' }).lamports, 0n);

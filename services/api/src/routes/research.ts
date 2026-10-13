@@ -154,11 +154,11 @@ export const researchModule: RouteModule = async (ctx: RouteCtx) => {
   });
 
   // ---- token safety gate: stateless evaluation of USER-ENTERED structured findings by the researcher's deterministic scorer.
-  app.post('/v1/research/token-safety/evaluate', async (req) => {
+  app.post('/v1/research/token-safety/evaluate', async (req, reply) => {
     assertNoSecrets(req.body);
     const b = tokenSafetySchema.parse(req.body);
     const caps = await status();
-    if (!caps.reachable) throw httpErr(503, 'researcher_unreachable', 'researcher service is not reachable; no safety evaluation was produced (treat the token as NOT cleared)');
+    if (!caps.reachable) return reply.code(503).send({ error: 'researcher_unreachable', message: 'researcher service is not reachable; no safety evaluation was produced (treat the token as NOT cleared)' });
     const findings: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(b.findings)) if (v !== undefined) findings[k] = v;   // explicit null = "unknown" (fails closed in the gate)
     try {
@@ -166,7 +166,7 @@ export const researchModule: RouteModule = async (ctx: RouteCtx) => {
         query: { strategy: b.strategy, position_usd: b.positionUsd, expected_gross_edge_bps: b.expectedGrossEdgeBps, est_slippage_bps: b.estSlippageBps } });
       return { ...out, inputNote: 'Evaluated from structured findings you entered by hand. APEX did not read the chain; vendor scores are additive evidence only and can never clear a token.' };
     } catch (e) {
-      if (e instanceof ResearcherError) throw httpErr(e.kind === 'upstream_4xx' ? 422 : 502, e.kind === 'upstream_4xx' ? 'rejected_findings' : 'researcher_failed', e.message);
+      if (e instanceof ResearcherError) return reply.code(e.kind === 'upstream_4xx' ? 422 : 502).send({ error: e.kind === 'upstream_4xx' ? 'rejected_findings' : 'researcher_failed', message: e.message });
       throw e;
     }
   });

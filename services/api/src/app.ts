@@ -128,12 +128,7 @@ export async function buildApp(pool: pg.Pool, cfg: Config): Promise<FastifyInsta
   app.get('/v1/chain-registry', async (req) => read(req, async (c) => ({ items: (await c.query(
     `select r.*, coalesce((select jsonb_object_agg(k.capability, jsonb_build_object('status', k.status, 'evidence', k.evidence_ref)) from chain_capabilities k where k.chain_id=r.id), '{}') capabilities from chain_registry r order by family, name`)).rows })));
 
-  app.get('/v1/chains/:id/health', async (req) => { const { id } = z.object({ id: z.string().min(3).max(80) }).parse(req.params); return read(req, async (c) => {
-    const r = (await c.query(`select id, name, family, enabled from chain_registry where id=$1`, [id])).rows[0];
-    if (!r) throw Object.assign(new Error('not found'), { statusCode: 404, code: 'not_found' });
-    // No health probe worker exists yet: report NOT_MEASURED rather than inventing a green light.
-    return { chain: r, health: { status: 'NOT_MEASURED', rpcLatencyMs: null, blockAgeMs: null, note: 'No chain health probe is running in this deployment; the status is unknown, not healthy.' } };
-  }); });
+  // GET /v1/chains/:id/health now lives in routes/chains.ts (real probe-sample health; NOT_MEASURED without samples)
 
   app.get('/v1/strategies', async (req) => read(req, async (c) => ({ items: (await c.query(`select * from strategy_definitions order by key, version desc`)).rows })));
 
@@ -242,7 +237,9 @@ export async function buildApp(pool: pg.Pool, cfg: Config): Promise<FastifyInsta
     async (c, b) => ({ id: (await one(c, `select api_request_vault_release($1,$2,$3,$4,$5) id`, [b.workspace, b.vaultBucket, b.walletChainAccount, b.asset, b.amount])).id }));
   cmd('decideApproval', z.object({ approval: uuid, approve: z.boolean() }).strict(), async (c, b) => { await c.query(`select api_decide_approval($1,$2)`, [b.approval, b.approve]); return {}; });
   cmd('releaseVault', z.object({ approval: uuid }).strict(), async (c, b, key) => ({ entry: (await one(c, `select api_release_vault($1,$2) id`, [b.approval, key])).id }));
-  cmd('approveDeploymentGate', z.object({ workspace: uuid, gate: z.string().min(2).max(80), status: z.enum(['PASS', 'FAIL', 'BLOCKED', 'NOT_RUN']), evidenceRef: z.string().max(500).optional(), commitSha: z.string().max(64).optional() }).strict(),
+  cmd('approveDeploymentGate', z.object({ workspace: uuid, gate: z.string().min(2).max(80), status: z.enum(['PASS', 'FAIL', 'BLOCKED', 'NOT_RUN']), evidenceRef: z.string().max(500).optional(), commitSha: z.string().max(64).optional() }).strict()
+      .refine((b) => b.status === 'NOT_RUN' || (!!b.evidenceRef && b.evidenceRef.trim().length >= 3), { message: 'an evidence reference is required to record a gate result', path: ['evidenceRef'] })
+      .refine((b) => b.status === 'NOT_RUN' || /^[0-9a-fA-F]{7,64}$/.test(b.commitSha ?? ''), { message: 'a git commit SHA (7-64 hex characters) is required to record a gate result', path: ['commitSha'] }),
     async (c, b) => { await c.query(`select api_set_gate($1,$2,$3,$4,$5)`, [b.workspace, b.gate, b.status, b.evidenceRef ?? null, b.commitSha ?? null]); return {}; });
   cmd('setLiveOptIn', z.object({ workspace: uuid, on: z.boolean() }).strict(), async (c, b) => { await c.query(`select api_set_live_opt_in($1,$2)`, [b.workspace, b.on]); return {}; });
 

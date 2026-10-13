@@ -12,3 +12,5 @@ Every row is produced by scripts/evidence.sh from a real run; logs are stored un
 | 2026-10-13T19:41:07Z | chains-b: chain-ton unit | **PASS** | fa45df5 | 48 | `pnpm --filter @apex/chain-ton test` | docs/evidence/runs/20261013T194107Z-chains_b__chain_ton_unit.log |
 | 2026-10-13T19:41:08Z | chains-b: chain-near unit | **PASS** | fa45df5 | 48 | `pnpm --filter @apex/chain-near test` | docs/evidence/runs/20261013T194108Z-chains_b__chain_near_unit.log |
 | 2026-10-13T19:41:09Z | chains-b: exchange-adapters unit | **PASS** | fa45df5 | 48 | `pnpm --filter @apex/exchange-adapters test` | docs/evidence/runs/20261013T194109Z-chains_b__exchange_adapters_unit.log |
+| 2026-10-13T19:43:09Z | python: researcher full suite | **FAIL** | 58b402c | 22 | `.venv/bin/python -m pytest -q` | docs/evidence/runs/20261013T194309Z-python__researcher_full_suite.log |
+| 2026-10-13T19:43:20Z | python: researcher full suite | **PASS** | 58b402c | 24 | `bash -c cd services/researcher && .venv/bin/python -m pytest -q` | docs/evidence/runs/20261013T194320Z-python__researcher_full_suite.log |

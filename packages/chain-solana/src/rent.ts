@@ -1,16 +1,35 @@
 // Rent / ATA existence reserve and wallet lamports reserve.
 import type { NativeReserve } from '@apex/contracts';
 import type { Token2022ExtensionName } from './token2022.ts';
+import type { SolanaRpcClient } from './rpc.ts';
 
-export interface RentParams { lamportsPerByteYear: bigint; exemptionThresholdYears: bigint; accountStorageOverhead: bigint }
-/** Fallback defaults (Solana rent docs). Production code must prefer getMinimumBalanceForRentExemption from the node. */
-export const DEFAULT_RENT: RentParams = { lamportsPerByteYear: 3_480n, exemptionThresholdYears: 2n, accountStorageOverhead: 128n };
+/** rent-exempt minimum = (dataLen + accountStorageOverhead) * lamportsPerByte. */
+export interface RentParams { lamportsPerByte: bigint; accountStorageOverhead: bigint }
+/**
+ * Legacy schedule (3480 lamports/byte-year * 2 years). LIVE FINDING (2026-10-13): mainnet/devnet/testnet nodes now answer
+ * getMinimumBalanceForRentExemption(0)=650_240 and (165)=1_488_440, i.e. 5080 lamports/byte -- the old constant is stale.
+ * It is kept ONLY as a conservative (higher => over-reserve) fallback; production must derive params from the node (rentParamsFromNode).
+ */
+export const LEGACY_RENT: RentParams = { lamportsPerByte: 6_960n, accountStorageOverhead: 128n };
+export const DEFAULT_RENT: RentParams = LEGACY_RENT;
+export const OBSERVED_RENT_2026_10_13: RentParams = { lamportsPerByte: 5_080n, accountStorageOverhead: 128n };
 
 export function rentExemptMinimum(dataLen: number, p: RentParams = DEFAULT_RENT): bigint {
   if (!Number.isInteger(dataLen) || dataLen < 0) throw new Error('bad data length');
-  return (BigInt(dataLen) + p.accountStorageOverhead) * p.lamportsPerByteYear * p.exemptionThresholdYears;
+  return (BigInt(dataLen) + p.accountStorageOverhead) * p.lamportsPerByte;
 }
-export const SYSTEM_ACCOUNT_RENT_FLOOR = (p: RentParams = DEFAULT_RENT) => rentExemptMinimum(0, p); // 890_880 with defaults
+export const SYSTEM_ACCOUNT_RENT_FLOOR = (p: RentParams = DEFAULT_RENT) => rentExemptMinimum(0, p);
+
+/** Derive the live rent schedule from the node and cross-check it on a second length (rejects a node whose answers are not linear in size). */
+export async function rentParamsFromNode(client: Pick<SolanaRpcClient, 'getMinimumBalanceForRentExemption'>): Promise<RentParams> {
+  const overhead = 128n;
+  const min0 = await client.getMinimumBalanceForRentExemption(0);
+  if (min0 === 0n || min0 % overhead !== 0n) throw new Error(`rent for 0 bytes (${min0}) is not a multiple of ${overhead}; cannot derive lamports/byte`);
+  const p: RentParams = { lamportsPerByte: min0 / overhead, accountStorageOverhead: overhead };
+  const min165 = await client.getMinimumBalanceForRentExemption(165);
+  if (min165 !== rentExemptMinimum(165, p)) throw new Error(`rent schedule not linear: node says ${min165} for 165 bytes, model ${rentExemptMinimum(165, p)}`);
+  return p;
+}
 export const SPL_TOKEN_ACCOUNT_LEN = 165;
 export const SPL_MINT_LEN = 82;
 

@@ -76,8 +76,11 @@ function solRunner(chainId: 'solana:mainnet' | 'solana:devnet' | 'solana:testnet
     const adapter = new sol.SolanaChainAdapter({ capabilitiesFor: () => caps2, clientFor: () => client, reserveConfigFor: () => ({ perTxCost: 10_000n, emergencyExitCost: 20_000n }) });
     if (await step(checks, 'getBalance (getBalances)', async () => `${(await adapter.getBalances(chainId, '11111111111111111111111111111111'))[0]!.amount} lamports`)) caps.push('getBalances');
     if (await step(checks, 'getRecentPrioritizationFees (getFeeQuote)', async () => { const q = await adapter.getFeeQuote(chainId); return `${q.nativeUnits} lamports; ${q.source}`; })) caps.push('getFeeQuote');
-    await step(checks, 'getTokenAccountsByOwner (jsonParsed)', async () => `${(await client.getTokenAccountsByOwner('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA', { programId: sol.TOKEN_PROGRAM_ID })).length} accounts`);
-    await step(checks, 'getMinimumBalanceForRentExemption(165) vs model', async () => { const n = await client.getMinimumBalanceForRentExemption(165); if (n !== sol.rentExemptMinimum(165)) throw new Error(`node says ${n}, model says ${sol.rentExemptMinimum(165)}`); return `${n} lamports (model matches)`; });
+    await step(checks, 'getTokenAccountsByOwner (jsonParsed)', async () => `${(await client.getTokenAccountsByOwner('11111111111111111111111111111111', { programId: sol.TOKEN_PROGRAM_ID })).length} accounts`);
+    await step(checks, 'rent schedule derived from node (rentParamsFromNode; legacy constant is STALE)', async () => {
+      const p = await sol.rentParamsFromNode(client);
+      return `${p.lamportsPerByte} lamports/byte => 0B=${sol.rentExemptMinimum(0, p)}, 165B=${sol.rentExemptMinimum(165, p)}, ATA(Token-2022,170B)=${sol.rentExemptMinimum(170, p)}; legacy default would say 165B=${sol.rentExemptMinimum(165)}`;
+    });
     await step(checks, 'getTransactionStatus (adapter on a recent finalized signature)', async () => {
       const sigs = (await client.request('getSignaturesForAddress', ['11111111111111111111111111111111', { limit: 3, commitment: 'finalized' }])) as { signature: string }[];
       if (!sigs.length) throw new Error('no signatures');

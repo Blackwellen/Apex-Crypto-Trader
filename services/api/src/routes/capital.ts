@@ -45,6 +45,19 @@ export const capitalRoutes: RouteModule = ({ app, read, cmd, one, q, schemas }) 
       note: 'Rebalancing previews use ledger units and target weights only. No market-price feed exists, so weights are compared by units (decimal-normalised), not by fiat value.' };
   }); });
 
+  // All wallet chain accounts of a workspace (ids needed for deposits/allocations/destinations) with ledger balances per wallet-account.
+  // Registered as a static path so it wins over /v1/wallets/:id.
+  app.get('/v1/wallets/accounts', async (req) => { const { workspace } = q(ws, req); return read(req, async (c) => {
+    const accounts = (await c.query(
+      `select x.id, x.wallet_id, x.chain_id, r.name chain_name, r.native_symbol, w.nickname, w.family, w.address, w.capability, w.state
+         from wallet_chain_accounts x join wallets w on w.id=x.wallet_id join chain_registry r on r.id=x.chain_id where w.workspace_id=$1 order by w.created_at, r.name`, [workspace])).rows;
+    const balances = (await c.query(
+      `select a.wallet_chain_account_id wca, a.bucket_id, a.environment, a.state, s.id asset, s.symbol, s.decimals, a.balance::text amount
+         from ledger_accounts a join assets s on s.id=a.asset_id join wallet_chain_accounts x on x.id=a.wallet_chain_account_id join wallets w on w.id=x.wallet_id
+        where w.workspace_id=$1 and a.balance<>0 and a.state not in ('external','equity','fees_expense')`, [workspace])).rows;
+    return { accounts, balances, note: 'Balances are internal-ledger balances (paper or reconciled). On-chain balance verification is not available until a certified read adapter is connected.' };
+  }); });
+
   const wallet = async (c: any, id: string) => { const w = (await c.query(`select * from wallets where id=$1`, [id])).rows[0]; if (!w) throw nf(); return w; };
 
   // Wallet activity: ledger entries touching this wallet's accounts + audit events about the wallet. Newest first.

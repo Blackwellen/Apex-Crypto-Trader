@@ -24,7 +24,7 @@ const SEEDS: EvmSeed[] = [
     finality: 'Arbitrum Nitro L2: sequencer soft confirmation; hard finality after L1 batch posting/finality', docs: 'https://docs.arbitrum.io/for-devs/dev-tools-and-resources/chain-info', finalityUnverified: true },
   { chainId: 10, name: 'OP Mainnet', native: 'ETH', explorer: 'https://optimistic.etherscan.io', rpc: ['https://mainnet.optimism.io', 'https://optimism-rpc.publicnode.com'], stack: 'op-stack',
     finality: 'OP-stack L2: sequencer soft confirmation; unsafe->safe->finalized follows L1', docs: 'https://docs.optimism.io/superchain/networks', finalityUnverified: true },
-  { chainId: 137, name: 'Polygon PoS', native: 'POL', explorer: 'https://polygonscan.com', rpc: ['https://polygon-bor-rpc.publicnode.com', 'https://polygon.drpc.org', 'https://polygon-rpc.com'], stack: 'sidechain',
+  { chainId: 137, name: 'Polygon PoS', native: 'POL', explorer: 'https://polygonscan.com', rpc: ['https://polygon-rpc.com', 'https://polygon-bor-rpc.publicnode.com', 'https://polygon.drpc.org'], stack: 'sidechain',
     finality: 'PoS sidechain (Bor/Heimdall) with checkpoints to Ethereum and milestone-based fast finality; not a rollup', docs: 'https://docs.polygon.technology/pos/reference/rpc-endpoints/', finalityUnverified: true },
   { chainId: 56, name: 'BNB Smart Chain', native: 'BNB', explorer: 'https://bscscan.com', rpc: ['https://bsc-dataseed.bnbchain.org', 'https://bsc-rpc.publicnode.com'], stack: 'l1',
     finality: 'Parlia PoSA with fast finality votes (BEP-126); probabilistic until finalized vote', docs: 'https://docs.bnbchain.org/bnb-smart-chain/developers/json_rpc/json-rpc-endpoint/', finalityUnverified: true },
