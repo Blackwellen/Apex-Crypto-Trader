@@ -135,6 +135,11 @@ impl Book {
         None
     }
 
+    pub fn level_qty(&self, side: Side, price: u128) -> u128 {
+        let m = if side == Side::Buy { &self.bids } else { &self.asks };
+        m.get(&price).map(|q| q.iter().map(|r| r.qty).sum()).unwrap_or(0)
+    }
+
     pub fn remaining(&self, id: u64) -> Option<u128> {
         let (side, price) = *self.loc.get(&id)?;
         let m = if side == Side::Buy { &self.bids } else { &self.asks };

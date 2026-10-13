@@ -22,6 +22,7 @@ begin
   perform assert_role(p_ws, array['owner','admin']::app_role[]);
   if not exists (select 1 from chain_registry where id = p_chain) then raise exception 'unknown chain %', p_chain using errcode='P0001'; end if;
   if not p_enabled and (p_reason is null or length(trim(p_reason)) < 3) then raise exception 'a reason is required to disable a chain' using errcode='P0001'; end if;
+  if exists (select 1 from workspace_chain_policy where workspace_id = p_ws and chain_id = p_chain and enabled = p_enabled) then return p_enabled; end if;   -- idempotent replay: no second effect, no second audit row
   insert into workspace_chain_policy(workspace_id, chain_id, enabled, reason, updated_by, updated_at)
     values (p_ws, p_chain, p_enabled, p_reason, auth.uid(), now())
     on conflict (workspace_id, chain_id) do update set enabled = excluded.enabled, reason = excluded.reason, updated_by = excluded.updated_by, updated_at = now();

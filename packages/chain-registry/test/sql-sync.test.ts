@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import { CAPABILITIES } from '@apex/contracts';
-import { buildRegistry, renderSeedSql, emptyForTest } from './helpers.ts';
+import { buildRegistry, renderSeedSql } from '../src/index.ts';
 import { freshDb } from './db.ts';
 import type { TestDb } from './db.ts';
 

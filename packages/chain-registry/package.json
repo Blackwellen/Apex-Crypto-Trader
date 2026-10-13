@@ -12,7 +12,12 @@
     "live": "node --experimental-transform-types --no-warnings scripts/live-reads.ts"
   },
   "dependencies": {
-    "@apex/contracts": "workspace:*"
+    "@apex/contracts": "workspace:*",
+    "@apex/chain-tron": "workspace:*",
+    "@apex/chain-cosmos": "workspace:*",
+    "@apex/chain-bitcoin": "workspace:*",
+    "@apex/chain-ton": "workspace:*",
+    "@apex/chain-near": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.8.0",
@@ -20,6 +25,7 @@
     "@apex/chain-evm": "workspace:*",
     "@apex/chain-solana": "workspace:*",
     "@apex/chain-sui": "workspace:*",
-    "@apex/chain-aptos": "workspace:*"
+    "@apex/chain-aptos": "workspace:*",
+    "pg": "^8.13.0"
   }
 }

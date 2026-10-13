@@ -15,24 +15,26 @@ fn mt() {}
 // ------------------------------------------------------------------ (3a) state table == SQL
 
 fn parse_sql_transitions(sql: &str) -> BTreeSet<(String, String)> {
-    let start = sql.find("insert into allowed_transitions values").expect("insert statement present");
-    let rest = &sql[start..];
-    let end = rest.find(';').expect("statement end");
-    let body = &rest[..end];
-    // strip line comments
-    let body: String = body.lines().map(|l| l.split("--").next().unwrap()).collect::<Vec<_>>().join("\n");
     let mut out = BTreeSet::new();
-    let mut i = 0;
-    let b = body.as_bytes();
-    while i < b.len() {
-        if b[i] == b'(' {
-            let j = body[i..].find(')').unwrap() + i;
-            let parts: Vec<String> = body[i + 1..j].split(',').map(|p| p.trim().trim_matches('\'').to_string()).collect();
-            assert_eq!(parts.len(), 2, "bad pair {:?}", parts);
-            out.insert((parts[0].clone(), parts[1].clone()));
-            i = j;
+    let mut rest = sql;
+    while let Some(start) = rest.find("insert into allowed_transitions values") {
+        let tail = &rest[start..];
+        let end = tail.find(';').expect("statement end");
+        // strip line comments
+        let body: String = tail[..end].lines().map(|l| l.split("--").next().unwrap()).collect::<Vec<_>>().join("\n");
+        let b = body.as_bytes();
+        let mut i = 0;
+        while i < b.len() {
+            if b[i] == b'(' {
+                let j = body[i..].find(')').unwrap() + i;
+                let parts: Vec<String> = body[i + 1..j].split(',').map(|p| p.trim().trim_matches('\'').to_string()).collect();
+                assert_eq!(parts.len(), 2, "bad pair {:?}", parts);
+                out.insert((parts[0].clone(), parts[1].clone()));
+                i = j;
+            }
+            i += 1;
         }
-        i += 1;
+        rest = &tail[end..];
     }
     out
 }
@@ -40,11 +42,19 @@ fn parse_sql_transitions(sql: &str) -> BTreeSet<(String, String)> {
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn state_machine_table_equals_migration_0003_and_live_db() {
     mt();
-    let sql = std::fs::read_to_string(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../packages/db/migrations/0003_trading.sql")).unwrap();
-    let from_sql = parse_sql_transitions(&sql);
+    // every `insert into allowed_transitions` in every migration file, in file order
+    let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../packages/db/migrations");
+    let mut files: Vec<_> = std::fs::read_dir(&dir).unwrap().map(|e| e.unwrap().path()).filter(|p| p.extension().map(|e| e == "sql").unwrap_or(false)).collect();
+    files.sort();
+    let mut from_sql = BTreeSet::new();
+    for f in &files {
+        from_sql.extend(parse_sql_transitions(&std::fs::read_to_string(f).unwrap()));
+    }
+    let base = parse_sql_transitions(&std::fs::read_to_string(dir.join("0003_trading.sql")).unwrap());
+    assert_eq!(base.len(), 45, "migration 0003 defines 45 base transitions");
     let from_rust: BTreeSet<(String, String)> = ALLOWED.iter().map(|(a, b)| (a.as_str().to_string(), b.as_str().to_string())).collect();
     assert_eq!(from_sql.len(), ALLOWED.len());
-    assert_eq!(from_rust, from_sql, "Rust ALLOWED != migration 0003 allowed_transitions");
+    assert_eq!(from_rust, from_sql, "Rust ALLOWED != union of allowed_transitions inserts in migration files");
 
     // and against a freshly migrated database (all migrations applied, incl. any later additions)
     let t = TestDb::new().await;
@@ -407,6 +417,7 @@ async fn fill_cannot_exceed_reservation_or_steal_other_reservations() {
 
 /// Checkpoints performed before the SUBMITTING->venue window (see `drive_inner`): verified by the window test below.
 const WINDOW_STEPS: usize = 9;
+static CRASHES: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
 
 async fn run_with_crash(db: &apex_execution::db::Db, v: &Arc<apex_execution::paper::PaperVenue>, id: Uuid, crash: Option<usize>) -> Outcome {
     let mut d = Dispatcher::new(db.clone(), v.clone());
@@ -416,6 +427,7 @@ async fn run_with_crash(db: &apex_execution::db::Db, v: &Arc<apex_execution::pap
         let opts = DriveOpts { cancel_if_open: waited >= 3, crash_after: crash.take(), ..Default::default() };
         match d.drive(id, opts).await {
             Err(ExecError::Crash(_)) => {
+                CRASHES.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
                 // process died: brand-new dispatcher, startup recovery replays every non-terminal intent
                 d = Dispatcher::new(db.clone(), v.clone());
                 d.recover(DriveOpts::default()).await.unwrap();
@@ -512,7 +524,9 @@ async fn crash_at_every_checkpoint_then_replay_gives_identical_final_ledger() {
     let fills: i64 = c.query_one("select count(*) from fills", &[]).await.unwrap().get(0);
     let fill_entries: i64 = c.query_one("select count(*) from ledger_entries where kind in ('fill_buy','fill_sell')", &[]).await.unwrap().get(0);
     assert_eq!(fills, fill_entries);
-    eprintln!("replay test: {} intents, {} fills, venue log hash {}", out_b.len(), fills, vb.log_hash());
+    let crashes = CRASHES.load(std::sync::atomic::Ordering::SeqCst);
+    assert!(crashes >= 20, "expected the crash run to actually crash many times, got {crashes}");
+    eprintln!("replay test: {crashes} simulated crashes; {} intents, {} fills, venue log hash {}", out_b.len(), fills, vb.log_hash());
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
@@ -551,6 +565,7 @@ async fn crash_in_submitting_window_goes_unknown_never_resubmits() {
 async fn unknown_outcome_is_never_resubmitted_only_reconciliation_resolves_it() {
     let t = TestDb::new().await;
     let w = seed_world(&t, 1_000_000_000).await;
+    set_global_limits(&t, w.ws, serde_json::json!({"max_open_unknown_orders": 1})).await; // allow 'a' and 'b' to coexist; a third entry is vetoed
     let v = new_venue(21, false);
     let d = Dispatcher::new(t.db(8), v.clone());
     let c = t.client().await;

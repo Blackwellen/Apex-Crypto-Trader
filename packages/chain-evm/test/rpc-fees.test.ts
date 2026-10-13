@@ -129,3 +129,8 @@ test('adapter: READ_ONLY allows fee quote, execution fails closed', async () => 
   await assert.rejects(() => a.getBalances('eip155:1', '0x' + '1'.repeat(40)), /fail closed/); // getBalances PENDING in this fixture
   assert.deepEqual(a.nativeReserveRequired('eip155:1', { plannedTxCount: 3 }).total, 1n + 6n + 6n);
 });
+
+test('non-standard string error bodies (e.g. {"error":"API key disabled"}) become typed RpcErrors with the message preserved', async () => {
+  const c = new EvmRpcClient({ expectedChainId: 137, transport: async (req) => ({ jsonrpc: '2.0', id: req.id, error: 'message: API key disabled, reason: tenant disabled' as never }) });
+  await assert.rejects(() => c.verifyChainId(), (e: unknown) => e instanceof RpcError && e.code === -1 && /API key disabled/.test(e.message));
+});

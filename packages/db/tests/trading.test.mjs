@@ -120,7 +120,7 @@ test('P0 environment_isolation + live gate: live portfolio/intents impossible un
   await db.asService((c) => c.query(`update workspace_settings set live_feature_flag=true where workspace_id=$1`, [w.ws]));
   assert.equal(await db.asService(async (c) => (await c.query(`select live_allowed($1) a`, [w.ws])).rows[0].a), false);
   // a PASS without evidence is rejected by constraint
-  await assert.rejects(db.asUser(w.owner, (c) => c.query(`select api_set_gate($1,'ledger_conservation','PASS',null,null)`, [w.ws])), /pass_needs_evidence/);
+  await assert.rejects(db.asUser(w.owner, (c) => c.query(`select api_set_gate($1,'ledger_conservation','PASS',null,null)`, [w.ws])), /pass_needs_evidence|evidence reference is required/);
 });
 
 test('live ledger mutations are refused for end users (reconciler-only)', async () => {

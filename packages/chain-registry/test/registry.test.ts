@@ -20,7 +20,7 @@ const EXPECT_EVM: Record<string, [string, string, number]> = {
   'eip155:534352': ['Scroll', 'ETH', 18], 'eip155:324': ['zkSync Era', 'ETH', 18], 'eip155:5000': ['Mantle', 'MNT', 18], 'eip155:81457': ['Blast', 'ETH', 18],
 };
 
-test('registry contains every network required by spec section 2 for families A', () => {
+test('registry contains every network required by spec section 2 (all 9 families)', () => {
   const reg = buildRegistry();
   for (const [id, [name, sym, dec]] of Object.entries(EXPECT_EVM)) {
     const r = reg.require(id); assert.equal(r.name, name); assert.equal(r.nativeSymbol, sym); assert.equal(r.nativeDecimals, dec); assert.equal(r.family, 'evm'); assert.equal(r.isTestnet, false);
@@ -30,7 +30,7 @@ test('registry contains every network required by spec section 2 for families A'
   assert.equal(reg.require('solana:devnet').isTestnet, true);
   assert.equal(reg.require('sui:mainnet').nativeDecimals, 9); assert.equal(reg.require('sui:mainnet').nativeSymbol, 'SUI');
   assert.equal(reg.require('aptos:mainnet').nativeDecimals, 8); assert.equal(reg.require('aptos:mainnet').nativeSymbol, 'APT');
-  assert.deepEqual([...new Set(reg.records.map((r) => r.family))].sort(), ['aptos', 'evm', 'sui', 'svm']);
+  assert.deepEqual([...new Set(reg.records.map((r) => r.family))].sort(), ['aptos', 'bitcoin', 'cosmos', 'evm', 'near', 'sui', 'svm', 'ton', 'tron']);
 });
 test('EVM numeric chain ids in records equal the expected EIP-155 ids', () => {
   const ids = { 'eip155:1': 1, 'eip155:8453': 8453, 'eip155:42161': 42161, 'eip155:10': 10, 'eip155:137': 137, 'eip155:56': 56, 'eip155:43114': 43114, 'eip155:59144': 59144, 'eip155:534352': 534352, 'eip155:324': 324, 'eip155:5000': 5000, 'eip155:81457': 81457 };
@@ -112,7 +112,7 @@ test('registerChains merge point: adds records, idempotent for identical, reject
   assert.throws(() => registerChains([{ ...tron, id: 'tron:x', chainRef: 'x', capabilities: { ...emptyCapabilities(), swap: { status: 'CERTIFIED' } } }]), /CERTIFIED without evidenceRef/);
   assert.throws(() => registerChains([{ ...tron, id: 'tron:y', chainRef: 'y', enabled: true }]), /enabled=false/);
   assert.throws(() => registerChains([{ ...tron, id: 'tron:z' }]), /namespace:chainRef/);
-  assert.throws(() => registerChains([{ ...tron, id: 'eip155:1', namespace: 'eip155', chainRef: '1', family: 'evm' }]), /duplicate chain id/, 'collision with a base chain fails at build');
+  assert.throws(() => registerChains([{ ...tron, id: 'eip155:1', namespace: 'eip155', chainRef: '1', family: 'evm' }]), /collides with a base chain/, 'collision with a base chain is rejected immediately');
 });
 test('registerChains has no effect on base chains and families list the external families', () => {
   assert.deepEqual([...EXTERNAL_FAMILIES].sort(), ['bitcoin', 'cosmos', 'near', 'ton', 'tron']);

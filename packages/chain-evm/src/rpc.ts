@@ -73,7 +73,7 @@ export class EvmRpcClient {
 
   private async raw(method: string, params: unknown[]): Promise<unknown> {
     const res = await this.transport({ jsonrpc: '2.0', id: this.nextId++, method, params });
-    if (res.error) throw new RpcError(method, res.error.code, res.error.message, res.error.data);
+    if (res.error) { const e = res.error as unknown; if (typeof e === 'object' && e !== null) { const o = e as { code?: unknown; message?: unknown; data?: unknown }; throw new RpcError(method, typeof o.code === 'number' ? o.code : -1, String(o.message ?? JSON.stringify(e)), o.data); } throw new RpcError(method, -1, String(e)); }
     if (res.result === undefined) throw new RpcError(method, -32603, 'missing result');
     return res.result;
   }

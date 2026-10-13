@@ -48,10 +48,13 @@ export function validateRecord(r: ChainRecord): void {
 }
 
 const registered = new Map<string, ChainRecord>();
+const baseIds = () => new Set(baseChains().map((r) => r.id));
 /** Register additional records (other families). Same id + identical JSON is a no-op; same id + different content throws. */
 export function registerChains(records: readonly ChainRecord[]): void {
+  const base = baseIds();
   for (const r of records) {
     validateRecord(r);
+    if (base.has(r.id)) throw new Error(`registerChains: ${r.id} collides with a base chain owned by chain-registry`);
     const prev = registered.get(r.id);
     if (prev && JSON.stringify(prev) !== JSON.stringify(r)) throw new Error(`registerChains: conflicting duplicate for ${r.id}`);
     registered.set(r.id, r);

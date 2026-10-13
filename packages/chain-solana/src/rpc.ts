@@ -51,7 +51,7 @@ export class SolanaRpcClient {
 
   private async raw(method: string, params: unknown[]): Promise<unknown> {
     const r = await this.transport({ jsonrpc: '2.0', id: this.nextId++, method, params });
-    if (r.error) throw new SolanaRpcError(method, r.error.code, r.error.message, r.error.data);
+    if (r.error) { const e = r.error as unknown; if (typeof e === 'object' && e !== null) { const o = e as { code?: unknown; message?: unknown; data?: unknown }; throw new SolanaRpcError(method, typeof o.code === 'number' ? o.code : -1, String(o.message ?? JSON.stringify(e)), o.data); } throw new SolanaRpcError(method, -1, String(e)); }
     if (r.result === undefined) throw new SolanaRpcError(method, -32603, 'missing result');
     return r.result;
   }

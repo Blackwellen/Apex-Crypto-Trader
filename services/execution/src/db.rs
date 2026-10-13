@@ -15,6 +15,9 @@ pub type BoxFut<'a, T> = Pin<Box<dyn Future<Output = Result<T, ExecError>> + Sen
 #[derive(Clone)]
 pub struct Db {
     pool: Pool,
+    /// Bounds concurrent per-intent drivers to half the pool: each driver pins one connection for its advisory lock
+    /// and needs a second one for its transactions, so this makes pool-exhaustion deadlock impossible.
+    drive_permits: std::sync::Arc<tokio::sync::Semaphore>,
 }
 
 /// An open service-role transaction. Dropping it without commit/rollback DISCARDS the connection (the server rolls
@@ -58,8 +61,9 @@ impl Db {
     pub fn connect(url: &str, max_size: usize) -> Result<Db, ExecError> {
         let cfg = tokio_postgres::Config::from_str(url).map_err(|e| ExecError::Pool(e.to_string()))?;
         let mgr = Manager::from_config(cfg, NoTls, ManagerConfig { recycling_method: RecyclingMethod::Fast });
+        let max_size = max_size.max(2);
         let pool = Pool::builder(mgr).max_size(max_size).build().map_err(|e| ExecError::Pool(e.to_string()))?;
-        Ok(Db { pool })
+        Ok(Db { pool, drive_permits: std::sync::Arc::new(tokio::sync::Semaphore::new(max_size / 2)) })
     }
 
     pub async fn begin(&self) -> Result<Tx, ExecError> {
@@ -97,6 +101,10 @@ impl Db {
             attempt += 1;
             tokio::time::sleep(std::time::Duration::from_millis(5 * attempt as u64)).await;
         }
+    }
+
+    pub async fn drive_permit(&self) -> tokio::sync::OwnedSemaphorePermit {
+        self.drive_permits.clone().acquire_owned().await.expect("semaphore never closed")
     }
 
     /// Plain pooled connection (no transaction) for session-level things like advisory locks.

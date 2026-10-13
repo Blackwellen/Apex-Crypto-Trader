@@ -27,7 +27,7 @@ begin
   end if;
   r := advance_intent(i.id, 'CANCELLED', 'console:cancel', jsonb_build_object('reason', left(coalesce(p_reason,'cancelled from console'),200), 'actor', auth.uid()));
   -- return any held reservation (idempotent; function ships with the execution service migration 0140)
-  if i.reservation_id is not null and to_regproc('settle_intent_reservation(uuid)') is not null then
+  if i.reservation_id is not null and to_regprocedure('settle_intent_reservation(uuid)') is not null then
     execute 'select settle_intent_reservation($1)' using i.id;
   end if;
   perform audit(i.workspace_id, 'intent.cancel', 'trade_intents', i.id::text, i.environment, jsonb_build_object('from', i.state, 'reason', p_reason));

@@ -1,7 +1,10 @@
 'use client';
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useCommand } from '@/lib/api';
-import { Badge, useToast } from '@/components/ui';
+import { Badge, DataTable, useToast } from '@/components/ui';
+
+/** DataTable over loosely-typed API rows. */
+export const Table = DataTable<any>;
 
 /**
  * Guarded command runner used by every consequential action in these pages.
@@ -12,20 +15,21 @@ import { Badge, useToast } from '@/components/ui';
  */
 export function useAction<B extends object>(name: string) {
   const cmd = useCommand<B>(name); const toast = useToast();
+  const [error, setError] = useState<string | null>(null);
   const inflight = useRef(false); const last = useRef<{ sig: string; key: string; t: number } | null>(null);
   const run = useCallback(async (body: B, o?: { ok?: string; onDone?: (r: any) => void }) => {
     if (inflight.current) return undefined;
-    inflight.current = true;
+    inflight.current = true; setError(null);
     const sig = JSON.stringify(body); const now = Date.now();
     if (!last.current || last.current.sig !== sig || now - last.current.t > 8000) last.current = { sig, key: crypto.randomUUID(), t: now };
     else last.current.t = now;
     try {
       const r = await cmd.mutateAsync({ body, key: last.current.key });
       toast.push(o?.ok ?? 'Done'); o?.onDone?.(r.result); return r.result;
-    } catch (e) { toast.push((e as Error).message, 'bad'); return undefined; }
+    } catch (e) { setError((e as Error).message); toast.push((e as Error).message, 'bad'); return undefined; }
     finally { inflight.current = false; }
   }, [cmd, toast]);
-  return { run, busy: cmd.isPending };
+  return { run, busy: cmd.isPending, error };
 }
 
 export const EnvBadge = ({ env }: { env: string }) => <Badge tone={env === 'live' ? 'bad' : 'accent'}>{env}</Badge>;

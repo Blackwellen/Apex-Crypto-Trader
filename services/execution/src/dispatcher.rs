@@ -388,6 +388,7 @@ impl Dispatcher {
 
     /// Drive one intent as far as it can go. Takes a per-intent advisory lock so two drivers never act on one intent.
     pub async fn drive(&self, id: Uuid, opts: DriveOpts) -> Result<DriveReport, ExecError> {
+        let _permit = self.db.drive_permit().await;
         let lock = self.db.conn().await?;
         let key = id.to_string();
         let got: bool = lock.query_one("select pg_try_advisory_lock(hashtextextended($1,0))", &[&key]).await?.get(0);
@@ -402,11 +403,26 @@ impl Dispatcher {
 
     async fn drive_inner(&self, id: Uuid, opts: &DriveOpts, run: &mut Run) -> Result<Outcome, ExecError> {
         let mut just_submitting = false;
+        let mut raced = 0u32;
         loop {
-            let it = self.load(id).await?;
-            if opts.stop_at == Some(it.state) {
-                return Ok(Outcome::Blocked(it.state));
+            match self.step(id, opts, run, &mut just_submitting).await {
+                Ok(Some(o)) => return Ok(o),
+                Ok(None) => {}
+                // someone else (e.g. a console cancel) moved the intent between our read and our write: re-read and go on
+                Err(ExecError::Db(ref e)) if raced < 5 && e.as_db_error().map(|d| d.message().contains("illegal transition")).unwrap_or(false) => {
+                    raced += 1;
+                }
+                Err(e) => return Err(e),
             }
+        }
+    }
+
+    /// One state-driven step. `Ok(Some(outcome))` ends the drive, `Ok(None)` means "loop again".
+    async fn step(&self, id: Uuid, opts: &DriveOpts, run: &mut Run, just_submitting: &mut bool) -> Result<Option<Outcome>, ExecError> {
+        let it = self.load(id).await?;
+        if opts.stop_at == Some(it.state) {
+            return Ok(Some(Outcome::Blocked(it.state)));
+        }
             use OrderState::*;
             match it.state {
                 Signal => {
@@ -493,27 +509,27 @@ impl Dispatcher {
                 }
                 Prepared => {
                     self.advance(id, Submitting, "submitting", json!({})).await?;
-                    just_submitting = true;
+                    *just_submitting = true;
                     run.cp()?;
                 }
                 Submitting => {
-                    self.submit_step(&it, just_submitting, run).await?;
-                    just_submitting = false;
+                    self.submit_step(&it, *just_submitting, run).await?;
+                    *just_submitting = false;
                 }
                 Acknowledged | PartiallyFilled => match self.fill_step(&it, opts, run).await? {
                     Flow::Continue => {}
-                    Flow::Waiting => return Ok(Outcome::Waiting(it.state)),
+                    Flow::Waiting => return Ok(Some(Outcome::Waiting(it.state))),
                 },
-                Unknown => return Ok(Outcome::Blocked(Unknown)),
+                Unknown => return Ok(Some(Outcome::Blocked(Unknown))),
                 Filled | Cancelled | Expired | Failed => {
                     self.settle(id).await?;
                     run.cp()?;
-                    return Ok(Outcome::Terminal(it.state));
+                    return Ok(Some(Outcome::Terminal(it.state)));
                 }
-                ApprovalWait => return Ok(Outcome::Blocked(ApprovalWait)),
-                s => return Ok(Outcome::Terminal(s)), // post-trade states belong to the settlement pipeline
-            }
+                ApprovalWait => return Ok(Some(Outcome::Blocked(ApprovalWait))),
+                s => return Ok(Some(Outcome::Terminal(s))), // post-trade states belong to the settlement pipeline
         }
+        Ok(None)
     }
 
     async fn load_ctx(&self, id: Uuid) -> Result<IntentContext, ExecError> {

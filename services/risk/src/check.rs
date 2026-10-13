@@ -79,7 +79,7 @@ pub struct RiskInput {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(tag = "code", content = "detail")]
+#[serde(tag = "code", content = "detail", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum VetoReason {
     GlobalStateBlocksEntries(String),
     BucketNotActive,

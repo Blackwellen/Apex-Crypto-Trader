@@ -43,18 +43,18 @@ fn healthy_entry_admitted() {
 fn each_entry_check_vetoes() {
     let p = Policy::conservative_defaults();
     let cases: Vec<(&str, Box<dyn Fn(&mut RiskInput)>)> = vec![
-        ("QuoteStale", Box::new(|i| i.quote_age_ms = 2_001)),
-        ("SlippageTooHigh", Box::new(|i| i.slippage_bps = 101)),
-        ("OrderTooLarge", Box::new(|i| i.notional = 25_001)),
-        ("BucketEmpty", Box::new(|i| i.bucket_value = 0)),
-        ("FeeCeilingExceeded", Box::new(|i| i.total_fee_bps = 51)), // 51/100 > 50%
-        ("NoPositiveEdge", Box::new(|i| i.expected_edge_bps = 0)),
-        ("ConcentrationExceeded", Box::new(|i| i.post_trade_concentration_bps = 3_001)),
-        ("FailedTxRateTooHigh", Box::new(|i| i.failed_tx_rate_bps = 1_001)),
-        ("UnknownOrdersOpen", Box::new(|i| i.open_unknown_orders = 1)),
-        ("DataDegraded", Box::new(|i| i.data_health = DataHealth::Degraded)),
-        ("GlobalStateBlocksEntries", Box::new(|i| i.global_state = GlobalState::HaltNewEntries)),
-        ("BucketNotActive", Box::new(|i| i.bucket_active = false)),
+        ("QUOTE_STALE", Box::new(|i| i.quote_age_ms = 2_001)),
+        ("SLIPPAGE_TOO_HIGH", Box::new(|i| i.slippage_bps = 101)),
+        ("ORDER_TOO_LARGE", Box::new(|i| i.notional = 25_001)),
+        ("BUCKET_EMPTY", Box::new(|i| i.bucket_value = 0)),
+        ("FEE_CEILING_EXCEEDED", Box::new(|i| i.total_fee_bps = 51)), // 51/100 > 50%
+        ("NO_POSITIVE_EDGE", Box::new(|i| i.expected_edge_bps = 0)),
+        ("CONCENTRATION_EXCEEDED", Box::new(|i| i.post_trade_concentration_bps = 3_001)),
+        ("FAILED_TX_RATE_TOO_HIGH", Box::new(|i| i.failed_tx_rate_bps = 1_001)),
+        ("UNKNOWN_ORDERS_OPEN", Box::new(|i| i.open_unknown_orders = 1)),
+        ("DATA_DEGRADED", Box::new(|i| i.data_health = DataHealth::Degraded)),
+        ("GLOBAL_STATE_BLOCKS_ENTRIES", Box::new(|i| i.global_state = GlobalState::HaltNewEntries)),
+        ("BUCKET_NOT_ACTIVE", Box::new(|i| i.bucket_active = false)),
     ];
     for (code, mutate) in cases {
         let mut i = base_input();
@@ -75,9 +75,9 @@ fn each_entry_check_vetoes() {
 #[test]
 fn blacklist_and_allowlist() {
     let p = Policy::conservative_defaults().tighten(&PolicyLayer { blacklist: Some(set(&["ETH"])), ..Default::default() });
-    assert!(codes(&evaluate(&p, &base_input())).contains(&"AssetBlacklisted".to_string()));
+    assert!(codes(&evaluate(&p, &base_input())).contains(&"ASSET_BLACKLISTED".to_string()));
     let p = Policy::conservative_defaults().tighten(&PolicyLayer { allowlist: Some(set(&["BTC"])), ..Default::default() });
-    assert!(codes(&evaluate(&p, &base_input())).contains(&"AssetNotAllowlisted".to_string()));
+    assert!(codes(&evaluate(&p, &base_input())).contains(&"ASSET_NOT_ALLOWLISTED".to_string()));
 }
 
 #[test]

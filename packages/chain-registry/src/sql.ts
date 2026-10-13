@@ -22,7 +22,7 @@ export const SEED_HEADER = `-- 0100_seed_chain_registry.sql
 `;
 
 export function renderSeedSql(records: readonly ChainRecord[]): string {
-  const out: string[] = [SEED_HEADER, 'begin;', ''];
+  const out: string[] = [SEED_HEADER, ''];
   for (const r of records) {
     const details = JSON.stringify(detailsOf(r));
     out.push(
@@ -39,6 +39,6 @@ export function renderSeedSql(records: readonly ChainRecord[]): string {
     out.push(`insert into chain_capabilities(chain_id, capability, status, evidence_ref) values\n${rows.join(',\n')}\n` +
       `on conflict (chain_id, capability) do update set status = excluded.status, evidence_ref = excluded.evidence_ref, updated_at = now()\n  where chain_capabilities.status <> 'CERTIFIED';`, '');
   }
-  out.push('commit;', '');
+  out.push('');
   return out.join('\n');
 }

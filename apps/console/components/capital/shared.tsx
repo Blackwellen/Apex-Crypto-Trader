@@ -90,7 +90,7 @@ export function useActionKey() {
 export function ReasonList({ title, reasons }: { title: string; reasons: string[] }) {
   return <div className="rounded-xl border border-[#f0dfb7] bg-warn-soft p-3 text-[13px] text-warn"><p className="font-semibold">{title}</p><ul className="mt-1 list-disc pl-5">{reasons.map((r) => <li key={r}>{r}</li>)}</ul></div>;
 }
-export function Mono({ children, className }: { children: ReactNode; className?: string }) { return <span className={cx('break-all font-mono text-[12px]', className)}>{children}</span>; }
+export function Mono({ children, className, title }: { children: ReactNode; className?: string; title?: string }) { return <span title={title} className={cx('break-all font-mono text-[12px]', className)}>{children}</span>; }
 
 /** Reasons live portfolios are locked, derived from real workspace/risk data (never hardcoded). */
 export function liveLockReasons(ws: { live_allowed: boolean; live_feature_flag: boolean; live_opt_in: boolean; global_state?: string }, gates: { status: string }[] | null): string[] {

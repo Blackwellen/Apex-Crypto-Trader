@@ -323,3 +323,22 @@ impl PaperExchange {
         self.orders.get(client).map(|o| o.price)
     }
 }
+
+// ---- test support (deterministic helpers used by the test-suite; no effect on production paths)
+impl PaperExchange {
+    /// Total quantity resting at one bid price (test support).
+    pub fn with_level_qty(&self, side: Side, price: u128) -> u128 {
+        self.book.level_qty(side, price)
+    }
+    pub fn depth_for_test(&self, side: Side) -> u128 {
+        self.book.depth_qty(side)
+    }
+    /// An anonymous market sell for `qty` (consumes bids in price-time order).
+    pub fn market_sell_for_test(&mut self, qty: u128) {
+        let id = self.next_market_id;
+        self.next_market_id += 1;
+        self.log.push(format!("M|MKT|{}|S|{}", id, qty));
+        let mr = self.book.match_order(id, Side::Sell, None, qty);
+        self.process_trades(&mr.trades);
+    }
+}

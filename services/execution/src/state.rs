@@ -40,7 +40,8 @@ pub const ALL_STATES: [OrderState; 23] = [
     LedgerApplied, CompoundingEligible,
 ];
 
-/// Mirror of the rows inserted into `allowed_transitions` by migration 0003.
+/// Mirror of every row inserted into `allowed_transitions` by the migrations (0003, plus the pre-submit CANCELLED
+/// moves added by 0244).
 pub const ALLOWED: &[(OrderState, OrderState)] = &[
     (Signal, Candidate),
     (Candidate, RiskEvaluating),
@@ -87,6 +88,14 @@ pub const ALLOWED: &[(OrderState, OrderState)] = &[
     (Final, Reconciled),
     (Reconciled, LedgerApplied),
     (LedgerApplied, CompoundingEligible),
+    // migration 0244: cancelling BEFORE submission is legal
+    (Signal, Cancelled),
+    (Candidate, Cancelled),
+    (RiskEvaluating, Cancelled),
+    (Admitted, Cancelled),
+    (CapitalReserved, Cancelled),
+    (Quoted, Cancelled),
+    (Prepared, Cancelled),
 ];
 
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]

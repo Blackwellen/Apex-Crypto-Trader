@@ -30,3 +30,66 @@ Cross-cutting venue safety code (all pure/injectable, unit-tested): `L2BookSync`
 
 Verification provenance: each chain record carries `verifiedFrom` (genesis hashes / node network names fetched live on 2026-10-13) and `unverifiedFields`; the lead merges `chainRecords` exported from each `@apex/chain-*` package (and `venueRecords` from `@apex/exchange-adapters`) into the registry.
 <!-- END:FAMILIES-B-VENUES -->
+
+<!-- BEGIN:FAMILIES-A (owner: chains-A agent; edit only inside these markers) -->
+## Families A (EVM, Solana, Sui, Aptos) -- `@apex/chain-registry`, `chain-evm`, `chain-solana`, `chain-sui`, `chain-aptos`
+
+Status vocabulary: **PASS** = logic built and unit/DB-tested offline (no chain read needed or claimed); **READ_ONLY** = a real public-RPC read succeeded through the package's own client (evidence: `docs/evidence/chains-a-live-reads.md`); **BLOCKED** = the live read was attempted and failed (error recorded); **NOT BUILT** = no code. **Nothing is `CERTIFIED`**: `assertCertified` throws for every chain x capability (tested: 27 chains x 26 capabilities), every record ships `enabled: false`, and execution capabilities (`swap`, `transfer`, `submit`, `bridge*`, `buildTransaction`, `signThroughPolicyService`) stay PENDING. Test evidence: `docs/evidence/chains-a-tests.md`. Seed migration: `packages/db/migrations/0100_seed_chain_registry.sql` (generated from the TS registry; sync-tested).
+
+### Chains (live read results; the READ_ONLY set is exactly what the registry and the seed carry)
+
+| Chain (record id) | Live read | Endpoint that passed | READ_ONLY capabilities | Evidence / unverified fields |
+|---|---|---|---|---|
+| Ethereum `eip155:1` | PASS | ethereum-rpc.publicnode.com | getBalances, getFeeQuote, simulate, getTransactionStatus, finalityStatus | `docs/evidence/chains-a-live-reads.md#eip155:1` |
+| Base `eip155:8453` | PASS | mainnet.base.org | getBalances, getFeeQuote, simulate, getTransactionStatus, finalityStatus | `docs/evidence/chains-a-live-reads.md#eip155:8453` (unverified: finalityModel) |
+| Arbitrum One `eip155:42161` | PASS | arb1.arbitrum.io/rpc | getBalances, getFeeQuote, simulate, getTransactionStatus, finalityStatus | `docs/evidence/chains-a-live-reads.md#eip155:42161` (unverified: finalityModel) |
+| OP Mainnet `eip155:10` | PASS | mainnet.optimism.io | getBalances, getFeeQuote, simulate, getTransactionStatus, finalityStatus | `docs/evidence/chains-a-live-reads.md#eip155:10` (unverified: finalityModel) |
+| Polygon PoS `eip155:137` | PASS | polygon-bor-rpc.publicnode.com; also: polygon-rpc.com BLOCKED | getBalances, getFeeQuote, simulate, getTransactionStatus, finalityStatus | `docs/evidence/chains-a-live-reads.md#eip155:137` (unverified: finalityModel) |
+| BNB Smart Chain `eip155:56` | PASS | bsc-dataseed.bnbchain.org | getBalances, getFeeQuote, simulate, getTransactionStatus, finalityStatus | `docs/evidence/chains-a-live-reads.md#eip155:56` (unverified: finalityModel) |
+| Avalanche C-Chain `eip155:43114` | PASS | api.avax.network/ext/bc/C/rpc | getBalances, getFeeQuote, simulate, getTransactionStatus, finalityStatus | `docs/evidence/chains-a-live-reads.md#eip155:43114` (unverified: finalityModel) |
+| Linea `eip155:59144` | PASS | rpc.linea.build | getBalances, getFeeQuote, simulate, getTransactionStatus, finalityStatus | `docs/evidence/chains-a-live-reads.md#eip155:59144` (unverified: officialDocsChainId, finalityModel) |
+| Scroll `eip155:534352` | PASS | rpc.scroll.io | getBalances, getFeeQuote, simulate, getTransactionStatus, finalityStatus | `docs/evidence/chains-a-live-reads.md#eip155:534352` (unverified: officialDocsChainId, finalityModel) |
+| zkSync Era `eip155:324` | PASS | mainnet.era.zksync.io | getBalances, getFeeQuote, getTransactionStatus, finalityStatus | `docs/evidence/chains-a-live-reads.md#eip155:324` (unverified: finalityModel) |
+| Mantle `eip155:5000` | PASS | rpc.mantle.xyz | getBalances, getFeeQuote, simulate, getTransactionStatus, finalityStatus | `docs/evidence/chains-a-live-reads.md#eip155:5000` (unverified: finalityModel) |
+| Blast `eip155:81457` | PASS | rpc.blast.io | getBalances, getFeeQuote, simulate, getTransactionStatus, finalityStatus | `docs/evidence/chains-a-live-reads.md#eip155:81457` (unverified: finalityModel) |
+| Ethereum Sepolia `eip155:11155111` (testnet) | PASS | ethereum-sepolia-rpc.publicnode.com | getBalances, getFeeQuote, simulate, getTransactionStatus, finalityStatus | `docs/evidence/chains-a-live-reads.md#eip155:11155111` (unverified: officialDocsChainId, finalityModel) |
+| Base Sepolia `eip155:84532` (testnet) | PASS | sepolia.base.org | getBalances, getFeeQuote, simulate, getTransactionStatus, finalityStatus | `docs/evidence/chains-a-live-reads.md#eip155:84532` (unverified: officialDocsChainId, finalityModel) |
+| Unichain `eip155:130` | PASS | mainnet.unichain.org | getBalances, getFeeQuote, simulate | `docs/evidence/chains-a-live-reads.md#eip155:130` (unverified: officialDocsChainId, finalityModel, rpcCandidates) |
+| Sonic `eip155:146` | PASS | rpc.soniclabs.com | getBalances, getFeeQuote, simulate | `docs/evidence/chains-a-live-reads.md#eip155:146` (unverified: officialDocsChainId, finalityModel, rpcCandidates) |
+| World Chain `eip155:480` | PASS | worldchain-mainnet.g.alchemy.com/public | getBalances, getFeeQuote, simulate | `docs/evidence/chains-a-live-reads.md#eip155:480` (unverified: officialDocsChainId, finalityModel, rpcCandidates) |
+| Berachain `eip155:80094` | PASS | rpc.berachain.com | getBalances, getFeeQuote, simulate | `docs/evidence/chains-a-live-reads.md#eip155:80094` (unverified: officialDocsChainId, finalityModel, rpcCandidates) |
+| Ink `eip155:57073` | PASS | rpc-gel.inkonchain.com | getBalances, getFeeQuote, simulate | `docs/evidence/chains-a-live-reads.md#eip155:57073` (unverified: officialDocsChainId, finalityModel, rpcCandidates) |
+| Gnosis `eip155:100` | PASS | rpc.gnosischain.com | getBalances, getFeeQuote, simulate | `docs/evidence/chains-a-live-reads.md#eip155:100` (unverified: officialDocsChainId, finalityModel, rpcCandidates) |
+| Solana Mainnet Beta `solana:mainnet` | PASS | api.mainnet-beta.solana.com | getBalances, getTokenMetadata, getFeeQuote, getTransactionStatus, finalityStatus | `docs/evidence/chains-a-live-reads.md#solana:mainnet` (unverified: rpcCandidates) |
+| Solana Devnet `solana:devnet` (testnet) | PASS | api.devnet.solana.com | getBalances, getFeeQuote, getTransactionStatus, finalityStatus | `docs/evidence/chains-a-live-reads.md#solana:devnet` (unverified: rpcCandidates) |
+| Solana Testnet `solana:testnet` (testnet) | PASS | api.testnet.solana.com | getBalances, getFeeQuote, getTransactionStatus, finalityStatus | `docs/evidence/chains-a-live-reads.md#solana:testnet` (unverified: rpcCandidates) |
+| Sui Mainnet `sui:mainnet` | PASS | sui-rpc.publicnode.com; also: fullnode.mainnet.sui.io:443 BLOCKED | getBalances, getFeeQuote, getTransactionStatus, finalityStatus | `docs/evidence/chains-a-live-reads.md#sui:mainnet` (unverified: rpcCandidates, finalityModel, explorerUrl) |
+| Sui Testnet `sui:testnet` (testnet) | PASS | sui-testnet-rpc.publicnode.com; also: fullnode.testnet.sui.io:443 BLOCKED | getBalances, getFeeQuote, getTransactionStatus, finalityStatus | `docs/evidence/chains-a-live-reads.md#sui:testnet` (unverified: rpcCandidates, finalityModel, explorerUrl) |
+| Aptos Mainnet `aptos:mainnet` | PASS | fullnode.mainnet.aptoslabs.com/v1 | getBalances, getFeeQuote, getTransactionStatus, finalityStatus | `docs/evidence/chains-a-live-reads.md#aptos:mainnet` (unverified: rpcCandidates, explorerUrl) |
+| Aptos Testnet `aptos:testnet` (testnet) | PASS | fullnode.testnet.aptoslabs.com/v1 | getBalances, getFeeQuote, getTransactionStatus, finalityStatus | `docs/evidence/chains-a-live-reads.md#aptos:testnet` (unverified: rpcCandidates, explorerUrl) |
+
+Endpoint findings: `polygon-rpc.com` answers `API key disabled, reason: tenant disabled` (BLOCKED; publicnode used). Official Sui fullnodes (`fullnode.<net>.sui.io`) **deprecated JSON-RPC** (`-32601 ... migrate to gRPC or GraphQL`) so they are BLOCKED for the JSON-RPC client; a third-party provider (publicnode) passed the chain-identifier check, and GraphQL (`graphql.<net>.sui.io`) also answered `chainIdentifier`. A gRPC/GraphQL Sui client is NOT BUILT. zkSync Era: `eth_call` from/to an EOA reverts, so `simulate` is not marked READ_ONLY there. Extra EVM chains (Unichain, Sonic, World Chain, Berachain, Ink, Gnosis) deliberately have no finality policy (`NoFinalityPolicyError`), so their `getTransactionStatus`/`finalityStatus` are not proven.
+
+### Capability matrix by family
+
+| Capability | EVM | Solana (SVM) | Sui | Aptos |
+|---|---|---|---|---|
+| address validation | PASS (EIP-55 via @noble/hashes keccak; official vectors) | PASS (base58, exactly 32 bytes) | PASS (0x + 64 hex, strict) | PASS (0x short/long forms normalised; strict mode) |
+| getBalances | READ_ONLY (native only) | READ_ONLY (native); token accounts via jsonParsed PASS offline | READ_ONLY (native) | READ_ONLY (native) |
+| getTokenMetadata | NOT BUILT | READ_ONLY on mainnet (USDC mint parsed live); Token-2022 analyzer PASS (real PYUSD mint fixture) | NOT BUILT | NOT BUILT |
+| getAllowances | PASS offline (`readAllowance` eth_call decode); not live-exercised, stays PENDING | n/a | n/a | n/a |
+| getFeeQuote / getPriorityFeeQuote | READ_ONLY (EIP-1559 + legacy fallback; hard cap) | READ_ONLY (`getRecentPrioritizationFees`; base 5000/sig + CU price + bounded Jito tip PASS offline) | READ_ONLY but INCOMPLETE (reference gas price only; storage cost needs a dry-run, quote marked stale) | READ_ONLY (`estimate_gas_price` x max_gas_amount) |
+| L2 / extra fee component | PASS offline: separate `l1DataFee` component; OP-stack and Arbitrum modelled (live info reads PASS), zkSync/Linea/Scroll/Mantle flagged UNKNOWN | rent/ATA reserve PASS; **rent schedule must come from the node** (live finding: 5080 lamports/byte now, the legacy 6960 constant is stale) | gross-vs-net gas (computation + storage - rebate) PASS | n/a |
+| simulate | READ_ONLY on 11 of 12 mainnets (zkSync Era BLOCKED: EOA eth_call reverts) | PASS offline (`simulateTransaction`, sigVerify off); not live-exercised (needs a valid tx) | PASS offline (`sui_dryRunTransactionBlock` wrapper); not live-exercised | PASS offline (`/transactions/simulate` wrapper); not live-exercised |
+| buildTransaction / signThroughPolicyService / submit | NOT BUILT (`submit` is gated by `assertCertified`, unreachable) | NOT BUILT | NOT BUILT | NOT BUILT |
+| getTransactionStatus / finalityStatus | READ_ONLY (receipt + depth + finalized-tag state machine; reorg handling PASS offline) | READ_ONLY (commitment ladder; blockhash-expiry proof and bundle-unknown => reconcile PASS offline) | READ_ONLY (checkpoint inclusion = final) | READ_ONLY (committed = final; expiry needs chain time AND an unconsumed sequence number) |
+| concurrency primitive | nonce allocator: DB row lock, contiguous, idempotent, >=10% replacement (migration 0101; 100-concurrent test PASS) | blockhash / lastValidBlockHeight tracker (no shared lane) | coin-object lease (migration 0102; 100 simultaneous requests => 1 winner per object, PASS) + consumed-version burn | sequence allocator (migration 0103; 100-concurrent PASS) |
+| nativeReserveRequired | PASS (floor + next N + emergency exit; spendable never negative) | PASS (rent floor + N tx + exit) | PASS | PASS |
+| Permit2 / approvals | PASS offline: infinite approvals refused, per-chain spender allowlist required, no hardcoded router or Permit2 address, exact short-lived permits | n/a | n/a | n/a |
+| subscribeBlocks / subscribeTransactions / subscribePools / discoverAssets / getLiquidity | NOT BUILT | NOT BUILT | NOT BUILT | NOT BUILT |
+| buildSwapQuote / swap / transfer / bridgeQuote / bridgeSubmit | NOT BUILT | NOT BUILT | NOT BUILT | NOT BUILT |
+| supportsAtomicBundle / PrivateRoute / SponsoredGas | NOT BUILT | Jito bundle outcome handling PASS offline; bundle submission NOT BUILT | NOT BUILT | NOT BUILT |
+| supportsNativeOrderBook | UNSUPPORTED | UNSUPPORTED | PENDING (DeepBook not built) | UNSUPPORTED |
+
+Known gaps: Aptos *orderless* transactions (`replay_protection_nonce`, sequence `u64::MAX`, seen on mainnet) are not modelled by the sequence allocator; Solana v1 transaction fee semantics are flagged unmodelled; finality depths in `chain-evm/src/finality.ts` are risk-policy defaults, not protocol guarantees; `finalityModel` text is marked unverified for every chain except Ethereum; Linea/Scroll and the testnets could not be confirmed against official docs pages (verified via ethereum-lists/chains plus live `eth_chainId` only). Merge of other families: `registerChains(chainRecords)` then `buildRegistry()`; compatibility with the TRON/Cosmos/Bitcoin/TON/NEAR `chainRecords` was probed (8 records accepted, 35 total) -- the lead must wire the imports and re-run `pnpm --filter @apex/chain-registry gen:sql`.
+<!-- END:FAMILIES-A -->
