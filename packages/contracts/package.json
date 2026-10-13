@@ -1,0 +1,11 @@
+{
+  "name": "@apex/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": { "typecheck": "tsc --noEmit -p .", "test": "node --test --experimental-strip-types src/*.test.ts" },
+  "dependencies": { "zod": "^3.25.0" },
+  "devDependencies": { "typescript": "^5.8.0", "@types/node": "^22.0.0" }
+}

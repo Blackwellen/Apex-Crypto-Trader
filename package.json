@@ -1,0 +1,11 @@
+{
+  "name": "apex",
+  "private": true,
+  "packageManager": "pnpm@10.28.0",
+  "scripts": {
+    "test": "pnpm -r --if-present test",
+    "test:db": "pnpm --filter @apex/db test",
+    "typecheck": "pnpm -r --if-present typecheck"
+  },
+  "engines": { "node": ">=22" }
+}
