@@ -28,6 +28,7 @@ export function ReadinessBadges({ caps }: { caps: CapMap | null | undefined }) {
 export function EnvBadge({ env }: { env: string }) {
   return env === 'live' ? <Badge tone="bad" title="Live environment">Live</Badge> : <Badge tone="accent" title="Paper (simulated) environment">Paper</Badge>;
 }
+export const stageTone = (s: string) => (s === 'live_candidate' ? 'warn' : s === 'paper' ? 'accent' : 'neutral') as 'warn' | 'accent' | 'neutral';
 export const ms = (v: number | null | undefined) => (v == null ? '—' : v < 1000 ? `${Math.round(v)} ms` : `${(v / 1000).toFixed(1)} s`);
 export const fmtDur = (v: number | null | undefined) => (v == null ? '—' : v < 1000 ? `${Math.round(v)} ms` : v < 60_000 ? `${(v / 1000).toFixed(1)} s` : `${Math.round(v / 60_000)} min`);
 export const amt = (v: string | null | undefined, decimals: number, sym?: string) => (v == null ? '—' : `${formatUnits(v, decimals)}${sym ? ' ' + sym : ''}`);

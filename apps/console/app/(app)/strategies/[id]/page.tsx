@@ -11,8 +11,7 @@ import { useWorkspace } from '@/lib/workspace';
 import { formatUnits, parseUnits, when } from '@/lib/format';
 import { STAGES, canEnableOnBucket, cloneToWizard, nextStage, promotionBlocker, stageLabel, type Stage, type WizardState } from '@/lib/strategy';
 import { StrategyWizard, type WizardDef } from '@/components/trading/strategy-wizard';
-import { EnvBadge, NotConnectedCard, Note, amt } from '@/components/trading/parts';
-import { stageTone } from '../page';
+import { EnvBadge, Note, amt, stageTone } from '@/components/trading/parts';
 
 const TABS = ['Overview', 'Signals', 'Execution', 'Risk', 'Research', 'Jobs', 'Audit'].map((t) => ({ id: t.toLowerCase(), label: t }));
 interface Detail {

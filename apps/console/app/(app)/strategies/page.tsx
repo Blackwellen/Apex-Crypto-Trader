@@ -10,13 +10,11 @@ import { useWorkspace } from '@/lib/workspace';
 import { chainCoverage, type CapMap } from '@/lib/chains';
 import { cloneToWizard, stageLabel, type WizardState } from '@/lib/strategy';
 import { StrategyWizard, type WizardDef } from '@/components/trading/strategy-wizard';
-import { Note } from '@/components/trading/parts';
+import { Note, stageTone } from '@/components/trading/parts';
 
-export interface Def { key: string; version: number; name: string; stage: string; catalogue_stage: string; spot_only: boolean; allowed_families: string[]; has_evidence: boolean; category: string; summary: string; data_sources: string[]; regimes: string[];
+interface Def { key: string; version: number; name: string; stage: string; catalogue_stage: string; spot_only: boolean; allowed_families: string[]; has_evidence: boolean; category: string; summary: string; data_sources: string[]; regimes: string[];
   param_bounds: WizardDef['param_bounds']; risk_budget: WizardDef['risk_budget']; workspace_id: string | null; cloned_from: string | null; intents: number; instances: { bucket_id: string; bucket: string; environment: string; enabled: boolean }[] }
 interface Approval { id: string; subject: { strategy: string; version: number; from: string; to: string }; status: string; created_at: string }
-
-export const stageTone = (s: string) => (s === 'live_candidate' ? 'warn' : s === 'paper' ? 'accent' : 'neutral') as 'warn' | 'accent' | 'neutral';
 
 function Approvals({ items, names }: { items: Approval[]; names: Map<string, string> }) {
   const { current, canOwn, canAdmin } = useWorkspace(); const toast = useToast(); const decide = useCommand('decideApproval'), apply = useCommand('applyStrategyStage');
