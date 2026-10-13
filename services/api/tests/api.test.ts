@@ -22,7 +22,7 @@ before(async () => {
   ETH = r.rows.find((x: any) => x.symbol === 'ETH').id; USDC = r.rows.find((x: any) => x.symbol === 'USDC').id;
   const url = db.url.replace('postgres@', 'apex_app:apex_app@');
   pool = makePool(url);
-  const cfg = { ...loadConfig({ SUPABASE_JWT_SECRET: secret, DATABASE_URL: url } as any), devAuth: true, rateLimitMax: 100000 };
+  const cfg = { ...loadConfig({ SUPABASE_JWT_SECRET: secret, DATABASE_URL: url } as any), devAuth: true, devAdminDatabaseUrl: db.url, rateLimitMax: 100000 };
   app = await buildApp(pool, cfg);
   tok = { a: await signDevToken(users.a, secret), b: await signDevToken(users.b, secret) };
 });
@@ -180,4 +180,12 @@ test('security headers (helmet) and CORS allowlist are actually applied to API r
   assert.equal(ok.headers['access-control-allow-origin'], 'http://localhost:3000');
   const evil = await app.inject({ method: 'GET', url: '/health', headers: { origin: 'https://evil.example' } });
   assert.equal(evil.headers['access-control-allow-origin'], undefined);
+});
+
+test('dev session mints a working token for a brand-new user via the unprivileged API pool', async () => {
+  const r = await app.inject({ method: 'POST', url: '/v1/dev/session', payload: { email: 'newuser@dev.test' } });
+  assert.equal(r.statusCode, 200, r.body);
+  const { token, userId } = r.json();
+  const ws = await app.inject({ method: 'GET', url: '/v1/workspaces', headers: { authorization: `Bearer ${token}` } });
+  assert.equal(ws.statusCode, 200); assert.deepEqual(ws.json().items, []); assert.ok(userId);
 });

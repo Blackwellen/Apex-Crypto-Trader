@@ -3,11 +3,13 @@ import helmet from '@fastify/helmet';
 import cors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
 import { randomUUID } from 'node:crypto';
-import type pg from 'pg';
+import pg from 'pg';
 import { z, ZodError } from 'zod';
 import type { Config } from './config.ts';
 import { mapPgError, withUser, type Tx } from './db.ts';
 import { signDevToken, verifyBearer } from './auth.ts';
+import { routeModules } from './routes/index.ts';
+import type { RouteCtx } from './routes/ctx.ts';
 
 declare module 'fastify' { interface FastifyRequest { userId?: string } }
 
@@ -55,9 +57,11 @@ export async function buildApp(pool: pg.Pool, cfg: Config): Promise<FastifyInsta
 
   // ---------- local-only dev session (disabled unless APEX_DEV_AUTH=1; refused in production by config) ----------
   if (cfg.devAuth) {
+    const devPool = new pg.Pool({ connectionString: cfg.devAdminDatabaseUrl, max: 2 });
+    app.addHook('onClose', async () => { await devPool.end(); });
     app.post('/v1/dev/session', async (req) => {
       const body = z.object({ email: z.string().email() }).strict().parse(req.body);
-      const r = await pool.query(`insert into auth.users(id,email) values ($1,$2) on conflict (email) do update set email=excluded.email returning id`, [randomUUID(), body.email]);
+      const r = await devPool.query(`insert into auth.users(id,email) values ($1,$2) on conflict (email) do update set email=excluded.email returning id`, [randomUUID(), body.email]);
       return { userId: r.rows[0].id, token: await signDevToken(r.rows[0].id, cfg.jwtSecret), warning: 'DEV AUTH: local development only' };
     });
   }
@@ -184,7 +188,7 @@ export async function buildApp(pool: pg.Pool, cfg: Config): Promise<FastifyInsta
   app.get('/v1/assets', async (req) => read(req, async (c) => ({ items: (await c.query(`select * from assets order by chain_id, symbol`)).rows })));
 
   // ---------- commands (validated, idempotent, audited by the database) ----------
-  const cmd = <S extends z.ZodTypeAny>(name: string, schema: S, run: (c: Tx, b: z.infer<S>, key: string, userId: string) => Promise<unknown>) =>
+  const cmd = <S extends z.ZodTypeAny>(name: string, schema: S, run: (c: Tx, b: z.infer<S>, key: string, userId: string) => Promise<unknown>): void => {
     app.post(`/v1/commands/${name}`, async (req: FastifyRequest, reply: FastifyReply) => {
       assertNoSecrets(req.body);
       const key = idemKey.parse(req.headers['idempotency-key']);
@@ -192,6 +196,7 @@ export async function buildApp(pool: pg.Pool, cfg: Config): Promise<FastifyInsta
       const out = await withUser(pool, req.userId!, (c) => run(c, body, `${name}:${key}`, req.userId!));
       return reply.code(200).send({ ok: true, result: out });
     });
+  };
   const one = async (c: Tx, sql: string, p: unknown[]) => (await c.query(sql, p)).rows[0];
 
   cmd('createWorkspace', z.object({ name: z.string().min(1).max(120) }).strict(), async (c, b) => ({ id: (await one(c, `select api_create_workspace($1) id`, [b.name])).id }));
@@ -240,6 +245,10 @@ export async function buildApp(pool: pg.Pool, cfg: Config): Promise<FastifyInsta
   cmd('approveDeploymentGate', z.object({ workspace: uuid, gate: z.string().min(2).max(80), status: z.enum(['PASS', 'FAIL', 'BLOCKED', 'NOT_RUN']), evidenceRef: z.string().max(500).optional(), commitSha: z.string().max(64).optional() }).strict(),
     async (c, b) => { await c.query(`select api_set_gate($1,$2,$3,$4,$5)`, [b.workspace, b.gate, b.status, b.evidenceRef ?? null, b.commitSha ?? null]); return {}; });
   cmd('setLiveOptIn', z.object({ workspace: uuid, on: z.boolean() }).strict(), async (c, b) => { await c.query(`select api_set_live_opt_in($1,$2)`, [b.workspace, b.on]); return {}; });
+
+  // feature route modules (each module registers its own /v1 endpoints; see routes/index.ts)
+  const ctx: RouteCtx = { app, pool, cfg, read, cmd, one, q, schemas: { uuid, amount, ws, page } };
+  for (const m of routeModules) await m(ctx);
 
   return app;
 }

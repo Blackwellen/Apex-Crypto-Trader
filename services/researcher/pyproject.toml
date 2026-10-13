@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "apex-researcher"
+version = "0.1.0"
+description = "APEX research service: backtests, compounding simulator, token-safety scoring, research API. Research/paper only."
+requires-python = ">=3.13"
+dependencies = [
+  "numpy==2.5.4",
+  "polars==2.0.0",
+  "fastapi==0.143.0",
+  "uvicorn==0.54.0",
+  "psycopg[binary]==3.3.6",
+  "httpx==0.28.1",
+  "jsonschema==4.26.0",
+]
+
+[project.optional-dependencies]
+pandas = ["pandas==3.0.6"]
+parquet = ["pyarrow==26.0.0"]
+dev = ["pytest==9.1.1", "hypothesis==6.169.0", "pandas==3.0.6", "pyarrow==26.0.0"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "tests"]
+addopts = "-ra"
+markers = [
+  "postgres: needs the local Postgres at ADMIN_DATABASE_URL (default localhost:54329)",
+  "protocol: protocol test against a fake local HTTP server (NOT a real model provider)",
+]
