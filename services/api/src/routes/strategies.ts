@@ -26,7 +26,7 @@ export const strategiesRoutes: RouteModule = async (ctx: RouteCtx) => {
 
   app.get('/v1/strategies/catalog', async (req) => { const { workspace } = q(ws, req); return read(req, async (c) => {
     const items = (await c.query(
-      `select d.key, d.version, d.name, d.stage catalogue_stage, coalesce(sd.stage, 'research') stage, d.spot_only, d.allowed_families, d.evidence, (d.evidence <> '{}'::jsonb) has_evidence,
+      `select d.key, d.version, d.name, d.stage catalogue_stage, coalesce(sd.stage, 'research') stage, d.spot_only, d.allowed_families::text[] allowed_families, d.evidence, (d.evidence <> '{}'::jsonb) has_evidence,
               d.category, d.summary, d.data_sources, d.regimes, d.param_bounds, d.risk_budget, d.validation_plan, d.workspace_id, d.cloned_from, d.created_at,
               coalesce((select jsonb_agg(jsonb_build_object('bucket_id', i.bucket_id, 'bucket', b.name, 'environment', i.environment, 'enabled', i.enabled, 'params', i.params) order by b.name)
                           from strategy_instances i join buckets b on b.id=i.bucket_id where i.workspace_id=$1 and i.strategy_key=d.key), '[]') instances,
@@ -39,7 +39,7 @@ export const strategiesRoutes: RouteModule = async (ctx: RouteCtx) => {
 
   app.get('/v1/strategies/:key/detail', async (req) => { const { key } = z.object({ key: stratKey }).parse(req.params); const { workspace } = q(ws, req); return read(req, async (c) => {
     const def = (await c.query(
-      `select d.*, coalesce(sd.stage, 'research') deployment_stage from strategy_definitions d left join strategy_deployments sd on sd.workspace_id=$2 and sd.strategy_key=d.key and sd.strategy_version=d.version
+      `select d.*, d.allowed_families::text[] allowed_families, coalesce(sd.stage, 'research') deployment_stage from strategy_definitions d left join strategy_deployments sd on sd.workspace_id=$2 and sd.strategy_key=d.key and sd.strategy_version=d.version
         where d.key=$1 order by d.version desc limit 1`, [key, workspace])).rows[0];
     if (!def) throw Object.assign(new Error('not found'), { statusCode: 404, code: 'not_found' });
     const instances = (await c.query(

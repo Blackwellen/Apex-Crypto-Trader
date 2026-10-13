@@ -67,7 +67,7 @@ export default function SettingsPage() {
   return (
     <NeedWorkspace>
       <PageHeader title="Settings" description="Workspace, members, limits and integrations. Nothing here is shown as connected unless it truly is." />
-      <div className="grid gap-5">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-5">
         <Card title="Workspace"><Async q={ov}>{(d: any) => (
           <dl className="grid gap-4 text-[13px] sm:grid-cols-2 lg:grid-cols-4">
             <div><dt className="text-muted">Name</dt><dd className="font-semibold">{d.workspace.name}</dd></div><div><dt className="text-muted">Base currency</dt><dd className="font-semibold">{d.workspace.base_currency}</dd></div>
@@ -83,7 +83,7 @@ export default function SettingsPage() {
         </Card>
 
         <Card title="Role matrix (what each role can do)">
-          <div className="overflow-x-auto rounded-xl border border-line"><table className="w-full min-w-[560px] text-left text-[13px]" data-testid="role-matrix"><caption className="sr-only">Role permission matrix</caption>
+          <div className="overflow-x-auto rounded-xl border border-line" tabIndex={0} role="region" aria-label="Role matrix (scrollable)"><table className="w-full min-w-[560px] text-left text-[13px]" data-testid="role-matrix"><caption className="sr-only">Role permission matrix</caption>
             <thead className="bg-[#f6f8fb] text-[11px] uppercase tracking-wider text-muted"><tr><th scope="col" className="px-4 py-3">Capability</th>{['Owner', 'Admin', 'Trader', 'Viewer'].map((r) => <th key={r} scope="col" className="px-4 py-3">{r}</th>)}</tr></thead>
             <tbody>{MATRIX.map((r) => <tr key={r[0]} className="border-t border-line"><th scope="row" className="px-4 py-2 font-medium">{r[0]}</th>{r.slice(1).map((c, i) => <td key={i} className="px-4 py-2">{c === 'yes' ? 'Yes' : 'No'}</td>)}</tr>)}</tbody></table></div>
           <p className="mt-2 text-[12px] text-muted">The UI greys out actions your role cannot perform, but the database re-checks the role on every command; this table only explains it.</p>

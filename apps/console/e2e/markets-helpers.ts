@@ -21,6 +21,8 @@ export async function noOverflow(page: Page, label: string) {
 /** Screenshots + axe (serious/critical) + overflow at the 5 required viewports. */
 export async function sweep(page: Page, name: string) {
   fs.mkdirSync(SHOTS, { recursive: true });
+  // transient toasts fade in/out and make contrast checks flaky: let them leave first
+  await expect(page.locator('div[aria-live="polite"][role="status"] > div')).toHaveCount(0, { timeout: 10_000 });
   for (const v of VIEWPORTS) {
     await page.setViewportSize({ width: v.w, height: v.h }); await page.waitForTimeout(250);
     await page.screenshot({ path: `${SHOTS}/${name}-${v.w}.png`, fullPage: true });

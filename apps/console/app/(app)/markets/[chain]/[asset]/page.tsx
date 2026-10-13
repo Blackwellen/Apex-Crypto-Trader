@@ -7,7 +7,7 @@ import { NeedWorkspace } from '@/components/onboarding';
 import { useWs } from '@/components/hooks';
 import { useCommand } from '@/lib/api';
 import { useWorkspace } from '@/lib/workspace';
-import { when } from '@/lib/format';
+import { shortAddr, when } from '@/lib/format';
 import { NoFeedNotice, ObservationDialog, StageBadge } from '@/components/markets/common';
 import { SecurityGate, emptyGateForm, type GateForm, type GateResult } from '@/components/markets/gate';
 import { TradePlanner } from '@/components/markets/planner';
@@ -28,7 +28,7 @@ function Body({ chain, contract }: { chain: string; contract: string }) {
       const watched = !!d.watch;
       const explorer = typeof d.chain.explorer_url === 'string' && /^https:\/\//.test(d.chain.explorer_url) ? d.chain.explorer_url : null;
       return (<>
-        <PageHeader title={symbol} description={`${d.chain.name} · ${d.identity.canonicalKey}`}
+        <PageHeader title={symbol} description={`${d.chain.name} · ${d.chain.id} · ${shortAddr(contract)}`}
           actions={<>
             <Button onClick={() => (watched ? unwatch : watch).mutate({ body: { workspace: current!.id, chain, contract, ...(watched ? {} : { symbol: symbol === '(unnamed)' ? undefined : symbol }) } }, { onSuccess: () => toast.push(watched ? 'Removed from watchlist' : 'Added to watchlist'), onError: (e) => toast.push(e.message, 'bad') })} disabled={!canWrite} aria-pressed={watched}>
               <Star className={`size-4 ${watched ? 'fill-[#d9a31c] text-[#d9a31c]' : ''}`} aria-hidden />{watched ? 'Watching' : 'Add to watchlist'}</Button>

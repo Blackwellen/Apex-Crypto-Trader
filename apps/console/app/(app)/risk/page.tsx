@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Async, Badge, Button, Card, EmptyState, Kpi, PageHeader, StackedBar, TabPanel, Tabs } from '@/components/ui';
 import { NeedWorkspace } from '@/components/onboarding';
+import { PaperEngineStrip } from '@/components/paper-status';
 import { useWs } from '@/components/hooks';
 import { EnvBadge, Note, Table, useAction } from '@/components/ops/common';
 import { EmergencyWizard, GateDialog, LiveOptIn, RiskPolicyWizard } from '@/components/risk/dialogs';
@@ -63,10 +64,11 @@ export default function RiskPage() {
     <NeedWorkspace>
       <PageHeader title="Risk Command" description="Current violations with their authoritative source, deployment gates, live lock and scoped stop controls. Exposure is the internal ledger only: no market prices, VaR or correlation are shown because no price feed is connected."
         actions={<Button variant="danger" onClick={() => setEmerg(true)}>Emergency controls</Button>} />
+      <PaperEngineStrip />
       <Tabs tabs={TABS} value={tab} onChange={setTab} />
 
       <TabPanel id="global" value={tab}>
-        <div className="grid gap-5">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-5">
           <Async q={risk}>{(r: any) => { const pass = r.gates.filter((g: any) => g.status === 'PASS').length; return (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               <Kpi label="Global state" value={r.settings.global_state.replace(/_/g, ' ')} sub={r.settings.global_state === 'active' ? 'Entries allowed (paper)' : 'New entries refused'} tone={r.settings.global_state === 'active' ? 'good' : 'bad'} />
@@ -109,7 +111,7 @@ export default function RiskPage() {
       </TabPanel>
 
       <TabPanel id="bucket" value={tab}>
-        <div className="grid gap-5">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-5">
           <Card title="Bucket risk"><Async q={buckets} empty={(b) => b.items.length === 0}>{(b) => (
             <Table caption="Bucket risk controls" rows={b.items} cols={[{ key: 'name', header: 'Bucket' }, { key: 'environment', header: 'Env', render: (x) => <EnvBadge env={x.environment} /> }, { key: 'state', header: 'State', filter: true, render: (x) => <Badge tone={x.state === 'active' ? 'good' : 'bad'}>{x.state.replace(/_/g, ' ')}</Badge> },
               { key: 'policy', header: 'Risk policy', render: (x) => <span className="font-mono text-[12px]">v{x.policy_version} {JSON.stringify(x.policy)}</span> },
@@ -120,7 +122,7 @@ export default function RiskPage() {
       </TabPanel>
 
       <TabPanel id="wallet" value={tab}>
-        <div className="grid gap-5">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-5">
           <Card title="Wallet state"><Async q={wallets} empty={(w) => w.items.length === 0}>{(w) => <Table caption="Wallet states" rows={w.items} cols={[{ key: 'nickname', header: 'Wallet' }, { key: 'family', header: 'Family', filter: true }, { key: 'capability', header: 'Capability' }, { key: 'state', header: 'State', render: (x) => <Badge tone={x.state === 'active' ? 'good' : 'bad'}>{x.state}</Badge> },
             { key: 'act', header: 'Action', render: (x) => x.state === 'paused' ? <Button variant="primary" disabled={!canAdmin} busy={wres.busy} onClick={() => wres.run({ wallet: x.id, reason: 'Resumed from Risk Command' }, { ok: 'Wallet resumed' })}>Resume</Button> : <span className="text-muted">-</span> }]} />}</Async></Card>
           <Card title="Exposure and rescue-gas reserve by wallet"><Async q={exp}>{() => <><ExposureTable rows={byWallet} caption="Exposure by wallet" labelHeader="Wallet" /><p className="mt-2 text-[12px] text-muted">Rescue gas = the fee/gas reserve column (ledger fee_reserve). Real native-token gas balances on-chain are not probed.</p></>}</Async></Card>
@@ -136,14 +138,14 @@ export default function RiskPage() {
       </TabPanel>
 
       <TabPanel id="strategy" value={tab}>
-        <div className="grid gap-5">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-5">
           <Card title="Open intents by strategy"><Async q={exp} empty={(e: any) => e.strategies.length === 0}>{(e: any) => <Table caption="Open intents by strategy" rows={e.strategies.map((s: any) => ({ ...s, id: s.strategy_key + s.environment + s.quote_symbol }))} cols={[{ key: 'strategy_key', header: 'Strategy', filter: true }, { key: 'environment', header: 'Env', render: (s) => <EnvBadge env={s.environment} /> }, { key: 'open_intents', header: 'Open intents', align: 'right' }, { key: 'open_notional', header: 'Open notional (quote units)', align: 'right', render: (s) => `${formatUnits(s.open_notional, s.quote_decimals)} ${s.quote_symbol}` }]} />}</Async></Card>
           <Card title="Capital budgets"><Async q={exp} empty={(e: any) => e.budgets.length === 0}>{(e: any) => <Table caption="Strategy budgets" rows={e.budgets.map((b: any) => ({ ...b, id: b.strategy_key + b.bucket_name + b.symbol }))} cols={[{ key: 'strategy_key', header: 'Strategy' }, { key: 'bucket_name', header: 'Bucket' }, { key: 'limit', header: 'Limit', align: 'right', render: (b) => `${formatUnits(b.limit_amount, b.decimals)} ${b.symbol}` }, { key: 'reserved', header: 'Reserved', align: 'right', render: (b) => `${formatUnits(b.reserved_amount, b.decimals)} ${b.symbol}` }]} />}</Async></Card>
         </div>
       </TabPanel>
 
       <TabPanel id="incidents" value={tab}>
-        <div className="grid gap-5">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-5">
           <Async q={inc}>{(d: any) => (<>
             <Note>{d.note}</Note>
             <Card title="Alerts"><Table caption="Alerts" rows={d.alerts} cols={[{ key: 'created_at', header: 'When', render: (a) => when(a.created_at) }, { key: 'severity', header: 'Severity', filter: true, render: (a) => <Badge tone={sevTone(a.severity)}>{a.severity}</Badge> }, { key: 'class', header: 'Class' }, { key: 'message', header: 'Message' },

@@ -203,9 +203,9 @@ export const consoleOpsRoutes: RouteModule = ({ app, cfg, read, cmd, one, q, sch
               case when t.target_asset is null then null else (select coalesce(sum(e.realized_net_quote),0)::text from profit_eligibility_events e
                  where e.workspace_id=t.workspace_id and (t.bucket_id is null or e.bucket_id=t.bucket_id) and e.quote_asset=t.target_asset
                    and e.created_at >= (case t.period when 'day' then date_trunc('day', now()) when 'week' then date_trunc('week', now()) when 'month' then date_trunc('month', now()) when 'quarter' then date_trunc('quarter', now()) else date_trunc('year', now()) end)
-                   and e.created_at >= t.created_at) end realised_in_period
+                   ) end realised_in_period
          from target_plans t left join buckets b on b.id=t.bucket_id left join assets s on s.id=t.target_asset where t.workspace_id=$1 order by t.created_at desc`, [workspace])).rows,
-    note: 'Targets are monitoring-only and never force trades. Progress = net realised profit recorded in profit_eligibility_events since the later of the period start and the plan creation, in the plan\'s reporting asset. Unrealised PnL is not computed (no price feed).',
+    note: 'Targets are monitoring-only and never force trades. Progress = net realised profit recorded in profit_eligibility_events within the current calendar period (UTC), in the plan\'s reporting asset. Unrealised PnL is not computed (no price feed).',
   })); });
   icmd('setCompoundingTarget', z.object({ workspace: uuid, bucket: uuid.optional(), period: z.enum(['day', 'week', 'month', 'quarter', 'year']), asset: uuid, targetAmount: amount.optional(), targetPctBps: z.number().int().min(1).max(1000000).optional(), startEquity: amount.default('0') }).strict()
     .refine((b) => b.targetAmount !== undefined || b.targetPctBps !== undefined, { message: 'provide an absolute amount and/or a percentage' }),

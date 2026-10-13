@@ -61,15 +61,15 @@ function Body() {
           <Kpi label="Latency samples" value={d.latency.reduce((a, l) => a + l.n, 0)} sub="Internal pipeline stages only" />
         </div>
         <div className="mb-5 grid gap-5 xl:grid-cols-2">
-          <Card title="Fee waterfall (from fills)">{d.waterfall.length === 0 ? <EmptyState title="No fills yet" hint="The waterfall is built from recorded fills. Gas and slippage rows stay empty until the execution service records them." /> : <div className="space-y-4">{d.waterfall.map((w) => <Waterfall key={w.environment + w.symbol} w={w} />)}<Note>{d.gasNote}</Note></div>}</Card>
-          <Card title="Execution latency p50 / p95 / p99"><Latency d={d} /></Card>
+          <Card className="min-w-0" title="Fee waterfall (from fills)">{d.waterfall.length === 0 ? <EmptyState title="No fills yet" hint="The waterfall is built from recorded fills. Gas and slippage rows stay empty until the execution service records them." /> : <div className="space-y-4">{d.waterfall.map((w) => <Waterfall key={w.environment + w.symbol} w={w} />)}<Note>{d.gasNote}</Note></div>}</Card>
+          <Card className="min-w-0" title="Execution latency p50 / p95 / p99"><Latency d={d} /></Card>
         </div>
         <div className="mb-5 grid gap-5 xl:grid-cols-2">
-          <Card title="Most expensive strategies (by fees)">{d.byStrategy.length === 0 ? <EmptyState title="No fills yet" /> : <DataTable caption="Fees by strategy" rows={d.byStrategy.map((s, i) => ({ ...s, id: String(i) }))} cols={[
+          <Card className="min-w-0" title="Most expensive strategies (by fees)">{d.byStrategy.length === 0 ? <EmptyState title="No fills yet" /> : <DataTable caption="Fees by strategy" rows={d.byStrategy.map((s, i) => ({ ...s, id: String(i) }))} cols={[
             { key: 'strategy_key', header: 'Strategy' }, { key: 'environment', header: 'Env', filter: true, render: (s) => <EnvBadge env={s.environment} /> }, { key: 'fills', header: 'Fills', align: 'right', sort: (s) => s.fills },
             { key: 'fees', header: 'Fees', align: 'right', text: (s) => f(s.fees, s.decimals, s.symbol), sort: (s) => Number(BigInt(s.fees) / 10n ** BigInt(Math.max(0, s.decimals - 4))) },
             { key: 'gross', header: 'Gross', align: 'right', text: (s) => f(s.gross, s.decimals, s.symbol) }]} />}</Card>
-          <Card title="Route economics (by venue)">{d.byVenue.length === 0 ? <EmptyState title="No fills yet" /> : <DataTable caption="Fees by venue" rows={d.byVenue.map((s, i) => ({ ...s, id: String(i) }))} cols={[
+          <Card className="min-w-0" title="Route economics (by venue)">{d.byVenue.length === 0 ? <EmptyState title="No fills yet" /> : <DataTable caption="Fees by venue" rows={d.byVenue.map((s, i) => ({ ...s, id: String(i) }))} cols={[
             { key: 'venue', header: 'Venue / route' }, { key: 'environment', header: 'Env', filter: true, render: (s) => <EnvBadge env={s.environment} /> }, { key: 'fills', header: 'Fills', align: 'right', sort: (s) => s.fills },
             { key: 'fees', header: 'Fees', align: 'right', text: (s) => f(s.fees, s.decimals, s.symbol) }, { key: 'gross', header: 'Gross', align: 'right', text: (s) => f(s.gross, s.decimals, s.symbol) }]} />}</Card>
         </div>
@@ -77,7 +77,7 @@ function Body() {
           <NotConnectedCard title="CEX / DEX quote comparator" what="Comparing live venue and aggregator quotes needs quote adapters. None are connected, so no comparison is shown." setup={['Connect a venue adapter (market metadata and order books) from the exchange adapters package.', 'Certify buildSwapQuote on a chain adapter for DEX routes.']} />
           <NotConnectedCard title="Jito / Flashbots defensive route health" what="Private-route landing rates are not measured. No route health is shown rather than an assumed green." setup={['Certify supportsPrivateRoute for the chain.', 'Record submissions and landing outcomes so landing rate can be measured.']} />
           <NotConnectedCard title="Missing exit depth" what="Exit depth requires order-book or pool-liquidity data per position." setup={['Connect an order-book or pool-state feed.', 'Run the continuous sell-simulation job (Operations).']} />
-          <Card title="Priority / gas solver inputs">
+          <Card className="min-w-0" title="Priority / gas solver inputs">
             <p className="mb-3 text-[13px] text-muted">The solver needs certified fee quotes per chain. Current status of <code>getFeeQuote</code> in the registry:</p>
             <Async q={chains} empty={(c) => c.items.length === 0}>{(c) => <ul className="divide-y divide-line text-[13px]">{c.items.map((x) => <li key={x.id} className="flex items-center justify-between py-2"><span>{x.name}</span><CapBadge status={effectiveStatus(x.capabilities.getFeeQuote)} /></li>)}</ul>}</Async>
           </Card>

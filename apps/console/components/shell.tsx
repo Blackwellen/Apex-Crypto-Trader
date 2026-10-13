@@ -7,6 +7,7 @@ import { NAV } from './nav';
 import { Badge, Button, ConfirmDialog, Dialog, Select, TextInput, ToastProvider, cx, useToast } from './ui';
 import { useWorkspace, WorkspaceProvider } from '@/lib/workspace';
 import { useCommand } from '@/lib/api';
+import { usePaperStatus } from './paper-status';
 
 function EnvBanner() {
   const { current } = useWorkspace();
@@ -20,10 +21,16 @@ function EnvBanner() {
 }
 
 function StateBadge() {
-  const { current } = useWorkspace(); if (!current) return null;
+  const { current } = useWorkspace(); const st = usePaperStatus(); if (!current) return null;
   const s = current.global_state;
   if (s !== 'active') return <Badge tone="bad">{s.replace(/_/g, ' ')}</Badge>;
-  return current.paper_running ? <Badge tone="good">Paper engine running</Badge> : <Badge>Paper engine stopped</Badge>;
+  if (!current.paper_running) return <Badge>Paper engine stopped</Badge>;
+  // truthful: "running" only while an engine process is actually heartbeating (GET /v1/paper/status), otherwise say what is missing
+  const v = st.data?.verdict;
+  if (v === 'running') return <Badge tone="good" title={st.data?.headline}>Paper engine running</Badge>;
+  if (v === 'partial_feed_not_running') return <Badge tone="warn" title={st.data?.headline}>Paper engine ON · feed not running</Badge>;
+  if (v === 'engine_not_running') return <Badge tone="bad" title={st.data?.headline}>Paper engine ON · process NOT RUNNING</Badge>;
+  return <Badge tone="warn" title="Engine heartbeat not yet known">Paper engine ON · status unknown</Badge>;
 }
 
 function KillSwitch() {

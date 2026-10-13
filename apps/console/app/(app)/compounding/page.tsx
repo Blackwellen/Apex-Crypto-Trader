@@ -38,7 +38,7 @@ export default function CompoundingPage() {
       <Tabs tabs={TABS} value={tab} onChange={setTab} />
 
       <TabPanel id="global" value={tab}>
-        <div className="grid gap-5">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-5">
           <Async q={ov}>{(d: any) => (<>
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               <Kpi label="Buckets with a policy" value={`${d.buckets.filter((b: any) => b.latest_policy).length} / ${d.buckets.length}`} sub="Latest immutable version" />
@@ -47,7 +47,7 @@ export default function CompoundingPage() {
               <Kpi label="Monitoring targets" value={d.targets.length} sub="Never force trades" />
             </div>
             <Card title="Targets and progress" action={<Badge>monitoring only</Badge>}>
-              <Note>Targets are monitoring only. Progress is net <strong>realised</strong> profit from the ledger in each target&apos;s reporting asset (profit events since the period start). No unrealised or marked PnL is shown because no price feed is connected.</Note>
+              <Note>Targets are monitoring only. Progress is net <strong>realised</strong> profit from the ledger in each target&apos;s reporting asset (profit events within the current UTC calendar period). No unrealised or marked PnL is shown because no price feed is connected.</Note>
               <div className="mt-4 space-y-5">
                 {d.targets.length === 0 ? <EmptyState title="No targets yet" hint="Create a monitoring target to track realised profit against it." /> : d.targets.map((t: any) => {
                   const tb = targetBase(t); const realised = t.realised_in_period === null ? null : BigInt(t.realised_in_period); const pb = realised === null ? null : progressBps(realised, tb);
@@ -55,7 +55,7 @@ export default function CompoundingPage() {
                     <div className="flex flex-wrap items-center justify-between gap-2 text-[13px]"><span className="font-semibold">{t.bucket_name ?? 'Whole workspace'} · {t.period}</span>
                       <span className="tabular text-muted">{realised === null ? 'no reporting asset on this plan' : `${formatUnits(realised, t.decimals)} of ${tb === null ? '?' : formatUnits(tb, t.decimals)} ${t.symbol}`}</span></div>
                     <div className="mt-1"><Progress label={`Progress for ${t.bucket_name ?? 'workspace'} ${t.period} target`} value={pb === null ? 0 : pb / 100} tone={pb !== null && pb >= 10000 ? 'good' : 'accent'} /></div>
-                    <p className="mt-1 text-[12px] text-muted">{pb === null ? 'Progress unavailable.' : `${(pb / 100).toFixed(2)}% of target`} · window from {when(t.window_start)} · target of absolute {t.target_amount ?? '-'}{t.target_pct_bps !== null ? `, ${pct(t.target_pct_bps)} of start equity` : ''}</p>
+                    <p className="mt-1 text-[12px] text-muted">{pb === null ? 'Progress unavailable.' : `${(pb / 100).toFixed(2)}% of target`} · window from {when(t.window_start)} · {t.target_amount !== null ? `target ${formatUnits(t.target_amount, t.decimals ?? 0)} ${t.symbol ?? ''}` : ''}{t.target_pct_bps !== null ? ` ${pct(t.target_pct_bps)} of start equity ${formatUnits(t.start_equity, t.decimals ?? 0)}` : ''}</p>
                   </div>); })}
               </div>
             </Card>
@@ -105,7 +105,7 @@ export default function CompoundingPage() {
 
       <TabPanel id="bucket" value={tab}>
         {buckets.length === 0 ? <Card><EmptyState title="No compounding-eligible buckets" hint="Create a trading bucket first. Vault and gas-reserve buckets do not take compounding policies." action={<Link className="font-semibold text-accent underline" href="/buckets">Go to Buckets</Link>} /></Card> : sel && (
-          <div className="grid gap-5">
+          <div className="grid grid-cols-[minmax(0,1fr)] gap-5">
             <Card title="Bucket" action={<Button variant="primary" disabled={!canAdmin} title={canAdmin ? undefined : 'Owner/admin only'} onClick={() => setWizard(true)}>{sel.latest_policy ? 'Edit waterfall (new version)' : 'Create waterfall policy'}</Button>}>
               <div className="grid gap-4 md:grid-cols-2">
                 <Select label="Bucket" value={sel.id} onChange={(e) => setBsel(e.target.value)} options={buckets.map((b) => ({ value: b.id, label: `${b.name} (${b.environment})` }))} />

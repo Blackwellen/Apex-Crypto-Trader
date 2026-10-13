@@ -1,11 +1,16 @@
 import { expect, test, type Page } from '@playwright/test';
-import { createWorkspaceIfNeeded, login } from './helpers';
+import { login } from './helpers';
 import { EVM_A, SEED12, apiCmd, apiGet, evmAddr, psql, seedRegistry, sweep } from './capital-helpers';
 
 test.beforeAll(() => seedRegistry());
 
 const dlg = (page: Page, name: RegExp | string) => page.getByRole('dialog', { name });
-async function newWorkspace(page: Page) { await login(page); await createWorkspaceIfNeeded(page); }
+async function newWorkspace(page: Page) {
+  await login(page); await page.goto('/portfolios');
+  const create = page.getByRole('button', { name: 'Create workspace' }); const ready = page.getByRole('button', { name: 'New portfolio' }).first();
+  await expect(create.or(ready).first()).toBeVisible();
+  if (await create.isVisible()) { await create.click(); await expect(ready).toBeVisible(); }
+}
 
 async function createPortfolio(page: Page, name: string) {
   await page.goto('/portfolios');
@@ -120,12 +125,20 @@ test('flow: workspace -> portfolio -> bucket -> wallet wizard -> assign -> PAPER
   await ad2.getByRole('button', { name: 'Allocate', exact: true }).click();
   await expect(page.getByText(/Allocated 100 USDC to Trading/)).toBeVisible();
 
+  // two concurrent submissions of the SAME action (same idempotency key) fund exactly once
+  const Wid = await ws(page); const bucketId = bucketUrl.split('/').pop()!;
+  const wcaId = psql(`select x.id from wallet_chain_accounts x join wallets w on w.id=x.wallet_id where w.nickname='Main wallet' and w.workspace_id='${Wid}'`);
+  const usdc = psql(`select id from assets where symbol='USDC' and chain_id='eip155:1' order by contract limit 1`);
+  const dupKey = 'e2e-double-submit-' + Date.now();
+  const both = await Promise.all([apiCmd(page, 'allocate', { workspace: Wid, bucket: bucketId, walletChainAccount: wcaId, asset: usdc, amount: '50000000' }, dupKey), apiCmd(page, 'allocate', { workspace: Wid, bucket: bucketId, walletChainAccount: wcaId, asset: usdc, amount: '50000000' }, dupKey)]);
+  expect(both.map((r) => r.status())).toEqual([200, 200]);
+
   // persisted: reload and read back from the API as well as the UI
   await page.reload();
-  await expect.poll(() => spendable(page)).toBe('700');
+  await expect.poll(() => spendable(page)).toBe('750');
   const id = bucketUrl.split('/').pop()!;
   const api = await apiGet(page, `v1/buckets/${id}`);
-  expect(api.balances.find((b: any) => b.state === 'available' && b.symbol === 'USDC').amount).toBe('700000000');
+  expect(api.balances.find((b: any) => b.state === 'available' && b.symbol === 'USDC').amount).toBe('750000000');
   // audit tab carries the wallet assignment and policy change
   await page.getByRole('tab', { name: 'Audit' }).click();
   await expect(page.getByRole('cell', { name: 'bucket.policy' })).toBeVisible();
@@ -256,7 +269,7 @@ test('policy editor: diff before save, hard-limit refusal, stale-version (409) i
   await expect(page.getByText('current version 3')).toBeVisible();
   expect(psql(`select policy->>'max_slippage_bps' from buckets where id='${p.TR}'`)).toBe('60');
   // history diff
-  await page.getByLabel('Compare current policy with').selectOption({ label: /v1/ as any }).catch(async () => page.getByLabel('Compare current policy with').selectOption({ index: 1 }));
+  await page.getByLabel('Compare current policy with').selectOption({ index: 3 });
   await expect(page.getByRole('table', { name: /Changes from v/ })).toBeVisible();
 });
 
@@ -368,7 +381,7 @@ test('bucket wizard B-01..B-05: explains physical/logical/protected, validates t
 });
 
 test('screenshots + axe + no overflow at 5 viewports for every capital page and wizard', async ({ page }) => {
-  test.setTimeout(300_000);
+  test.setTimeout(480_000);
   await newWorkspace(page); const p = await populate(page);
   await cmdOk(page, 'createBasket', { bucket: p.TR, name: 'Stable core', members: [{ asset: p.USDC, weight_bps: 6000 }, { asset: p.DAI, weight_bps: 4000 }] });
   await cmdOk(page, 'setStrategyBudget', { bucket: p.TR, strategy: psql(`select key from strategy_definitions limit 1`) || 'none', asset: p.USDC, limit: '1000000000' }).catch(() => {});

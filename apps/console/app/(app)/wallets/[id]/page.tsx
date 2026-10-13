@@ -48,7 +48,7 @@ function Body({ id }: { id: string }) {
                 { key: 'held', header: 'Ledger balance', align: 'right', text: (r) => formatUnits(d.balances.filter((b) => b.symbol === r.symbol && d.chainAccounts.find((c) => c.id === b.wallet_chain_account_id)?.chain_id === r.chain_id).reduce((s, b) => s + BigInt(b.amount), 0n), r.decimals) }]} />; }}</Async>
         </TabPanel>
         <TabPanel id="permissions" value={tab}>
-          <div className="grid gap-5 lg:grid-cols-2">
+          <div className="grid gap-5 lg:grid-cols-2 [&>*]:min-w-0">
             <Card title="Active authorisation scope"><dl className="space-y-2 text-[13px]">
               <div><dt className="font-semibold">Capability</dt><dd><CapabilityBadge cap={w.capability} /></dd></div>
               <div><dt className="font-semibold">Can APEX sign?</dt><dd>{managed ? 'Only via the separate signer service under its own scope.' : 'No. APEX holds no keys for this wallet.'}</dd></div>
@@ -81,7 +81,7 @@ function Body({ id }: { id: string }) {
             <Card title="Transfer fees paid">{f.transferFees.length === 0 ? <p className="text-[13px] text-muted">No transfer fees recorded.</p> : <DataTable searchable={false} caption="Transfer fees" rows={f.transferFees} cols={[{ key: 'created_at', header: 'When', render: (r: any) => when(r.created_at) }, { key: 'kind', header: 'Kind' }, { key: 'status', header: 'Status' }, { key: 'fee', header: 'Fee', align: 'right', render: (r: any) => `${formatUnits(r.fee, r.decimals)} ${r.symbol}` }]} />}</Card></div>)}</Async>
         </TabPanel>
         <TabPanel id="connections" value={tab}>
-          <div className="grid gap-5 lg:grid-cols-2">
+          <div className="grid gap-5 lg:grid-cols-2 [&>*]:min-w-0">
             <Card title="Chain accounts">{d.chainAccounts.length === 0 ? <p className="text-[13px] text-muted">None.</p> : <ul className="space-y-2">{d.chainAccounts.map((c) => { const reg = chains.data?.items.find((x) => x.id === c.chain_id); const caps = Object.entries(reg?.capabilities ?? {}); return (
               <li key={c.id} className="rounded-xl border border-line p-3 text-[13px]"><strong>{c.name}</strong> <Mono className="text-muted">{c.chain_id}</Mono><div className="mt-1 text-[12px] text-muted">Registry capability evidence: {caps.length ? caps.map(([k, x]) => `${k} ${x.status}`).join(', ') : 'none recorded'}</div></li>); })}</ul>}</Card>
             <Card title="Provider connection"><EmptyState title="No wallet provider connected" hint="This wallet is registered as a public address. A provider/signer connection (browser wallet, hardware, WalletConnect, KMS) is not part of this release, so there is no session, signature scope or expiry to show." /></Card>

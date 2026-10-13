@@ -33,7 +33,7 @@ export async function seedWorld(page: Page): Promise<World> {
   await ok(page, 'assignWalletToBucket', { wallet: w.W4, bucket: w.L2, exclusive: false, maxAllocationBps: 5000, logicalAck: true });
   const wca = (id: string) => sql(`select id from wallet_chain_accounts where wallet_id='${id}'`);
   w.wca1 = wca(w.W1); w.wca2 = wca(w.W2); w.wca3 = wca(w.W3); w.wca4 = wca(w.W4);
-  w.USDC = sql(`select id from assets where chain_id='eip155:1' and symbol='USDC'`); w.ETH = sql(`select id from assets where chain_id='eip155:1' and symbol='ETH'`);
+  w.USDC = sql(`select id from assets where chain_id='eip155:1' and symbol='USDC' order by id limit 1`); w.ETH = sql(`select id from assets where chain_id='eip155:1' and symbol='ETH' order by id limit 1`);
   const fund = async (wcaId: string, bucket: string, amount: string) => { await ok(page, 'paperDeposit', { workspace: w.ws, walletChainAccount: wcaId, asset: w.USDC, amount }); await ok(page, 'allocate', { workspace: w.ws, bucket, walletChainAccount: wcaId, asset: w.USDC, amount }); };
   await fund(w.wca1, w.A, '1000000000'); await fund(w.wca4, w.L1, '100000000'); await fund(w.wca3, w.V, '500000000');
   w.ownerId = sql(`select user_id from memberships where workspace_id='${w.ws}' and role='owner'`);

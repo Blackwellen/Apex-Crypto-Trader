@@ -17,7 +17,7 @@ let ETH: string, USDC: string;
 before(async () => {
   db = await freshDb();
   await db.pool.query(`insert into auth.users(id,email) values ($1,'a@t'),($2,'b@t')`, [users.a, users.b]);
-  await db.pool.query(`insert into chain_registry(id,namespace,chain_ref,family,name,native_symbol,native_decimals,finality_model,address_format) values ('eip155:1','eip155','1','evm','Ethereum','ETH',18,'probabilistic','0x-hex20')`);
+  await db.pool.query(`insert into chain_registry(id,namespace,chain_ref,family,name,native_symbol,native_decimals,finality_model,address_format) values ('eip155:1','eip155','1','evm','Ethereum','ETH',18,'probabilistic','0x-hex20') on conflict do nothing`);
   const r = await db.pool.query(`insert into assets(chain_id,contract,symbol,decimals) values ('eip155:1','native','ETH',18),('eip155:1','0xusdc','USDC',6) returning id,symbol`);
   ETH = r.rows.find((x: any) => x.symbol === 'ETH').id; USDC = r.rows.find((x: any) => x.symbol === 'USDC').id;
   const url = db.url.replace('postgres@', 'apex_app:apex_app@');
@@ -188,4 +188,11 @@ test('dev session mints a working token for a brand-new user via the unprivilege
   const { token, userId } = r.json();
   const ws = await app.inject({ method: 'GET', url: '/v1/workspaces', headers: { authorization: `Bearer ${token}` } });
   assert.equal(ws.statusCode, 200); assert.deepEqual(ws.json().items, []); assert.ok(userId);
+});
+
+test('chain-registry never returns RPC URLs with paths/credentials/keys (origins only)', async () => {
+  await db.pool.query(`update chain_registry set details = jsonb_build_object('rpcCandidates', jsonb_build_array('https://user:pw@rpc.example.com/v2/SECRETKEY?token=abc')) where id='eip155:1'`);
+  const r = await call('GET', '/v1/chain-registry', 'a');
+  const body = r.body; assert.ok(!/SECRETKEY|token=abc|user:pw/.test(body), body.slice(0, 300));
+  assert.deepEqual(r.json().items.find((c: any) => c.id === 'eip155:1').details.rpcOrigins, ['rpc.example.com']);
 });

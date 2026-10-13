@@ -3,7 +3,10 @@ import type { PoolClient } from 'pg';
 
 // bigint-safe: numeric(78,0) arrives as string (pg default) and is never coerced to JS number.
 export function makePool(url: string) {
-  return new pg.Pool({ connectionString: url, max: 40, idleTimeoutMillis: 30_000 });
+  const pool = new pg.Pool({ connectionString: url, max: 40, idleTimeoutMillis: 30_000 });
+  // An unhandled 'error' on an idle client (DB failover/restart) would crash the process; log and let the pool replace the client.
+  pool.on('error', (e) => console.error('pg idle client error:', e.message));
+  return pool;
 }
 export type Tx = PoolClient;
 

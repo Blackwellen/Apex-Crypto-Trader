@@ -72,6 +72,11 @@ pub struct World {
 
 /// workspace + paper portfolio + trading bucket + wallet (watch-only, paper), funded and allocated with `funds` USDC base units.
 pub async fn seed_world(t: &TestDb, funds: u128) -> World {
+    seed_world_addr(t, funds, "0x9a4Fc2bC7897dd21305B92C0e5cb86DFFc984362").await
+}
+
+/// Same as `seed_world` but with a caller-chosen wallet address (several workspaces can live in one database).
+pub async fn seed_world_addr(t: &TestDb, funds: u128, addr: &str) -> World {
     let c = t.client().await;
     let owner = Uuid::new_v4();
     c.batch_execute("begin; select set_config('apex.service','on',true)").await.unwrap();
@@ -93,7 +98,7 @@ pub async fn seed_world(t: &TestDb, funds: u128) -> World {
     let pf: Uuid = c.query_one("select api_create_portfolio($1,'Core','paper')", &[&ws]).await.unwrap().get(0);
     let bucket: Uuid = c.query_one("select api_create_bucket($1,'Trading','trading','physical','{}')", &[&pf]).await.unwrap().get(0);
     let wallet: Uuid = c
-        .query_one("select api_connect_wallet($1,'W1','evm','0x9a4Fc2bC7897dd21305B92C0e5cb86DFFc984362','watch_only',array['eip155:1'])", &[&ws])
+        .query_one("select api_connect_wallet($1,'W1','evm',$2,'watch_only',array['eip155:1'])", &[&ws, &addr])
         .await
         .unwrap()
         .get(0);

@@ -89,13 +89,13 @@ export default function PortfoliosPage() {
               ]} />}
           </Card>
           {d.portfolios.length > 0 && (
-            <div className="mt-5 grid gap-5 xl:grid-cols-3">
+            <div className="mt-5 grid gap-5 xl:grid-cols-3 [&>*]:min-w-0">
               <Card title="Ledger holdings by portfolio" className="xl:col-span-2">
                 {d.balances.length === 0 ? <EmptyState title="No ledger balances yet" hint="Open a bucket, add a PAPER deposit and allocate it. Equity is shown per asset in base units; there is no market-price valuation, so no fiat total is shown." /> :
                   <div className="space-y-4">{d.portfolios.filter((p) => bal(p.id).length).map((p) => {
                     const syms = [...new Set(bal(p.id).map((b) => b.symbol))];
                     return <div key={p.id}><h3 className="mb-1 text-[13px] font-semibold">{p.name} <EnvBadge env={p.environment} /></h3>
-                      <div className="overflow-x-auto rounded-xl border border-line"><table className="w-full min-w-[480px] text-left text-[13px]"><caption className="sr-only">{p.name} holdings by asset and state</caption>
+                      <div tabIndex={0} role="region" aria-label={`${p.name} holdings (scrollable table)`} className="overflow-x-auto rounded-xl border border-line"><table className="w-full min-w-[480px] text-left text-[13px]"><caption className="sr-only">{p.name} holdings by asset and state</caption>
                         <thead className="bg-[#f6f8fb] text-[11px] uppercase tracking-wider text-muted"><tr><th scope="col" className="px-4 py-2">Asset</th><th scope="col" className="px-4 py-2 text-right">Spendable</th><th scope="col" className="px-4 py-2 text-right">Reserved / in flight</th><th scope="col" className="px-4 py-2 text-right">Vault / restricted / fee reserve</th></tr></thead>
                         <tbody>{syms.map((s) => { const rows = bal(p.id).filter((b) => b.symbol === s); const dec = rows[0].decimals; const sum = (st: string[]) => rows.filter((r) => st.includes(r.state)).reduce((a, r) => a + BigInt(r.amount), 0n);
                           return <tr key={s} className="border-t border-line"><th scope="row" className="px-4 py-2 font-semibold">{s}</th><td className="tabular px-4 py-2 text-right">{formatUnits(sum(['available']), dec)}</td><td className="tabular px-4 py-2 text-right">{formatUnits(sum(['reserved', 'pending_out', 'pending_bridge']), dec)}</td><td className="tabular px-4 py-2 text-right">{formatUnits(sum(['vault', 'restricted', 'fee_reserve']), dec)}</td></tr>; })}</tbody></table></div></div>; })}</div>}

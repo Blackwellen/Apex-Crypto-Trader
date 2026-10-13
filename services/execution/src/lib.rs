@@ -1,10 +1,12 @@
 //! APEX execution service: typed order state machine, round-trip economics, deterministic paper exchange,
 //! idempotent dispatcher over the Postgres ledger. LIVE submission is intentionally not implemented.
 pub mod db;
+pub mod dbvenue;
 pub mod dispatcher;
 pub mod economics;
 pub mod error;
 pub mod paper;
+pub mod serve;
 pub mod state;
 pub mod venue;
 

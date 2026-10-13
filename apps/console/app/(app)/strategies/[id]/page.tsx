@@ -109,7 +109,7 @@ function Assignments({ d, buckets, assets }: { d: Detail; buckets: Bucket[]; ass
           className={cx('relative inline-flex h-7 w-12 items-center rounded-full border transition-colors disabled:cursor-not-allowed disabled:opacity-50', r.inst?.enabled ? 'border-accent bg-accent' : 'border-line bg-[#dfe5ee]')}>
           <span className={cx('inline-block size-5 rounded-full bg-white shadow transition-transform', r.inst?.enabled ? 'translate-x-6' : 'translate-x-1')} /><span className="sr-only">{r.inst?.enabled ? 'On' : 'Off'}</span></button>) },
       { key: 'settings', header: 'Settings', text: (r) => (r.inst ? Object.keys(r.inst.params).join(', ') || 'defaults' : '—') },
-      { key: 'act', header: '', text: () => '', render: (r) => <span className="flex gap-2"><Button disabled={!canAdmin} onClick={() => setBudget(r.b)}>Set budget</Button><Button disabled={!canAdmin} onClick={() => setConfig(r.b)}>Settings</Button></span> }]} />
+      { key: 'act', header: 'Actions', text: () => '', render: (r) => <span className="flex gap-2"><Button disabled={!canAdmin} onClick={() => setBudget(r.b)}>Set budget</Button><Button disabled={!canAdmin} onClick={() => setConfig(r.b)}>Settings</Button></span> }]} />
     <BudgetDialog open={!!budget} onClose={() => setBudget(null)} bucket={budget} strategy={d.definition.key} assets={assets} existing={d.budgets.find((x) => x.bucket_id === budget?.id)} />
     <ConfigDialog open={!!config} onClose={() => setConfig(null)} bucket={config} d={d} />
     <ConfirmDialog open={!!toggle} onClose={() => setToggle(null)} busy={en.isPending} confirmLabel={toggle?.on ? 'Enable' : 'Disable'} danger={!toggle?.on} title={`${toggle?.on ? 'Enable' : 'Disable'} on ${toggle?.b.name ?? ''}`}

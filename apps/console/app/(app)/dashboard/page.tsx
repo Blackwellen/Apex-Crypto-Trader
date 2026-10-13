@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Pause, Play } from 'lucide-react';
 import { Async, Badge, Button, Card, ConfirmDialog, DataTable, Kpi, PageHeader, Progress, StackedBar, useToast, EmptyState } from '@/components/ui';
 import { NeedWorkspace } from '@/components/onboarding';
+import { PaperEngineStrip } from '@/components/paper-status';
 import { useWs } from '@/components/hooks';
 import { useCommand } from '@/lib/api';
 import { useWorkspace } from '@/lib/workspace';
@@ -39,6 +40,7 @@ export default function Dashboard() {
   return (
     <NeedWorkspace>
       <PageHeader title="Command Centre" description="Ledger-backed view of segregated capital, risk gates and paper trading. Amounts come from the authoritative double-entry ledger; nothing here is a market-price valuation." actions={<Controls />} />
+      <PaperEngineStrip />
       <Async q={ov}>{(d: any) => {
         const paper: Bal[] = d.balances.filter((b: Bal) => b.environment === 'paper');
         const symbols = [...new Set(paper.map((b) => b.symbol))];

@@ -35,13 +35,14 @@ function Explorer() {
   const toggle = (r: Item) => (r.watched ? unwatch : watch).mutate({ body: { workspace: current!.id, chain: r.chain_id, contract: r.contract, ...(r.watched ? {} : { symbol: r.symbol === '(unnamed)' ? undefined : r.symbol }) } }, { onSuccess: () => toast.push(r.watched ? 'Removed from watchlist' : 'Added to watchlist'), onError: err });
   const applyView = (id: string) => { const v = views.data?.items.find((x) => x.id === id); if (!v) return; setTab(v.filters.tab ?? 'all'); setQ(v.filters.q ?? ''); setDq(v.filters.q ?? ''); setChain(v.filters.chain ?? ''); setStage(v.filters.stage ?? ''); toast.push(`Applied view "${v.name}"`); };
   const chainOpts = [{ value: '', label: 'All chains' }, ...(chains.data?.items ?? []).map((c) => ({ value: c.id, label: c.name }))];
-  const filters = { ...(tab !== 'all' ? { tab } : {}), ...(dq.trim() ? { q: dq.trim() } : {}), ...(chain ? { chain } : {}), ...(stage ? { stage } : {}) };
+  const filters = { ...(tab !== 'all' ? { tab } : {}), ...(q.trim() ? { q: q.trim() } : {}), ...(chain ? { chain } : {}), ...(stage ? { stage } : {}) };
   return (<>
     <NoFeedNotice />
     <Tabs tabs={TABS} value={tab} onChange={setTab} />
+    <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
     <p className="-mt-2 mb-4 text-[12px] text-muted" id="tab-help">{TAB_HELP[tab]}</p>
     <Card pad>
-      <div className="mb-4 grid gap-3 md:grid-cols-[1fr_200px_200px]">
+      <div className="mb-4 grid gap-3 lg:grid-cols-[1fr_200px_200px]">
         <div><label htmlFor="mkt-q" className="mb-1 block text-[12px] font-semibold text-[#44546a]">Search symbol, chain, contract or BASE/QUOTE pair</label>
           <input id="mkt-q" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="e.g. USDC, eip155:1, 0xa0b8…, ETH/USDC" className="min-h-10 w-full rounded-xl border border-line px-3 text-[14px]" aria-describedby="tab-help" /></div>
         <Select label="Native chain" value={chain} onChange={(e) => setChain(e.target.value)} options={chainOpts} />
@@ -55,7 +56,7 @@ function Explorer() {
           <Button variant={mode === 'table' ? 'primary' : 'secondary'} onClick={() => setMode('table')} aria-pressed={mode === 'table'}><Table2 className="size-4" aria-hidden />Table</Button>
           <Button variant={mode === 'cards' ? 'primary' : 'secondary'} onClick={() => setMode('cards')} aria-pressed={mode === 'cards'}><LayoutGrid className="size-4" aria-hidden />Cards</Button></div>
       </div>
-      {(views.data?.items.length ?? 0) > 0 && <ul className="mb-4 flex flex-wrap gap-2" aria-label="Manage saved views">{views.data!.items.map((v) => <li key={v.id} className="flex items-center gap-1 rounded-full bg-[#eef1f6] py-1 pl-3 pr-1 text-[12px]"><button className="font-semibold" onClick={() => applyView(v.id)}>{v.name}</button>
+      {(views.data?.items.length ?? 0) > 0 && <ul className="mb-4 flex flex-wrap gap-2" aria-label="Saved view shortcuts">{views.data!.items.map((v) => <li key={v.id} className="flex items-center gap-1 rounded-full bg-[#eef1f6] py-1 pl-3 pr-1 text-[12px]"><button className="font-semibold" onClick={() => applyView(v.id)}>{v.name}</button>
         <button aria-label={`Delete saved view ${v.name}`} disabled={!canWrite} className="rounded-full p-1 hover:bg-white" onClick={() => delView.mutate({ body: { view: v.id } }, { onSuccess: () => toast.push('View deleted'), onError: err })}><Trash2 className="size-3.5" aria-hidden /></button></li>)}</ul>}
       <Async q={list}>{(d) => d.items.length === 0
         ? <EmptyState title={d.total === 0 ? 'No tokens known yet' : 'No tokens match these filters'} hint={d.total === 0 ? 'The canonical registry is empty and you have not added any token. Add a token to your watchlist or log a lifecycle observation on the Meme Radar.' : 'Clear the search or filters, or switch tab.'} />
@@ -75,9 +76,10 @@ function Explorer() {
               <div className="mt-2 flex flex-wrap gap-2"><StageBadge stage={r.stage} />{r.in_registry ? <Badge tone="good">Registry</Badge> : <Badge tone="warn">Unregistered</Badge>}</div>
               <div className="mt-2 text-[12px] text-muted">Price: no feed connected</div></li>)}</ul>}</Async>
     </Card>
+    </div>
     <Dialog open={saveOpen} onClose={() => setSaveOpen(false)} title="Save current filters" footer={<><Button onClick={() => setSaveOpen(false)}>Cancel</Button>
       <Button variant="primary" disabled={!viewName.trim()} busy={saveView.isPending} onClick={() => saveView.mutate({ body: { workspace: current!.id, page: 'markets', name: viewName.trim(), filters } }, { onSuccess: () => { toast.push('View saved'); setSaveOpen(false); }, onError: err })}>Save view</Button></>}>
-      <div className="space-y-3"><TextInput label="View name" value={viewName} onChange={(e) => setViewName(e.target.value)} maxLength={80} /><p className="text-[13px] text-muted">Saves: tab <strong>{tab}</strong>, search “{dq.trim() || '—'}”, chain {chain || 'any'}, stage {stage || 'any'}. Views are stored in your workspace and shared with its members.</p></div>
+      <div className="space-y-3"><TextInput label="View name" value={viewName} onChange={(e) => setViewName(e.target.value)} maxLength={80} /><p className="text-[13px] text-muted">Saves: tab <strong>{tab}</strong>, search “{q.trim() || '—'}”, chain {chain || 'any'}, stage {stage || 'any'}. Views are stored in your workspace and shared with its members.</p></div>
     </Dialog>
     <Dialog open={addOpen} onClose={() => setAddOpen(false)} title="Add token to watchlist" footer={<><Button onClick={() => setAddOpen(false)}>Cancel</Button>
       <Button variant="primary" busy={watch.isPending} disabled={!CONTRACT_RE.test(add.contract.trim())} onClick={() => watch.mutate({ body: { workspace: current!.id, chain: add.chain || chains.data?.items[0]?.id, contract: add.contract.trim(), ...(add.symbol.trim() ? { symbol: add.symbol.trim() } : {}) } }, { onSuccess: () => { toast.push('Added to watchlist'); setAddOpen(false); setAdd({ chain: '', contract: '', symbol: '' }); }, onError: err })}>Add to watchlist</Button></>}>

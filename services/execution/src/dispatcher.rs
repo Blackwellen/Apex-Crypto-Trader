@@ -424,6 +424,13 @@ impl Dispatcher {
             return Ok(Some(Outcome::Blocked(it.state)));
         }
             use OrderState::*;
+            // Halt / emergency stop: an ENTRY that has been admitted but not yet submitted is cancelled instead of sent (exits continue).
+            // SQL (`advance_intent ... SUBMITTING`) refuses the same thing, so a halt that lands between this check and the submit is still safe.
+            if it.side == Side::Buy && matches!(it.state, Admitted | CapitalReserved | Quoted | Prepared) && self.global_halted(it.workspace).await? {
+                self.advance(id, Cancelled, "halt:cancelled_entry", json!({"reason": "global state refuses new entries; order cancelled before submission"})).await?;
+                run.cp()?;
+                return Ok(None);
+            }
             match it.state {
                 Signal => {
                     self.advance(id, Candidate, "candidate", json!({})).await?;
@@ -508,9 +515,18 @@ impl Dispatcher {
                     run.cp()?;
                 }
                 Prepared => {
-                    self.advance(id, Submitting, "submitting", json!({})).await?;
-                    *just_submitting = true;
-                    run.cp()?;
+                    match self.advance(id, Submitting, "submitting", json!({})).await {
+                        Ok(_) => {
+                            *just_submitting = true;
+                            run.cp()?;
+                        }
+                        Err(e) if e.message().contains("refuses new entries") => {
+                            // a halt landed after the check above: SQL refused the submit, so nothing was sent
+                            self.advance(id, Cancelled, "halt:cancelled_entry", json!({"reason": e.message()})).await?;
+                            run.cp()?;
+                        }
+                        Err(e) => return Err(e),
+                    }
                 }
                 Submitting => {
                     self.submit_step(&it, *just_submitting, run).await?;
@@ -530,6 +546,16 @@ impl Dispatcher {
                 s => return Ok(Some(Outcome::Terminal(s))), // post-trade states belong to the settlement pipeline
         }
         Ok(None)
+    }
+
+    async fn global_halted(&self, ws: Uuid) -> Result<bool, ExecError> {
+        fn op(tx: &Tx, ws: Uuid) -> BoxFut<'_, bool> {
+            Box::pin(async move {
+                let r = tx.c().query_opt("select global_state <> 'active' from workspace_settings where workspace_id = $1", &[&ws]).await?;
+                Ok(r.map(|r| r.get::<_, bool>(0)).unwrap_or(true))
+            })
+        }
+        self.db.run(|tx| op(tx, ws)).await
     }
 
     async fn load_ctx(&self, id: Uuid) -> Result<IntentContext, ExecError> {

@@ -46,7 +46,7 @@ export default function AuditPage() {
       <PageHeader title="Audit and Incidents" description="Immutable event timeline (a database trigger rejects edits and deletes), plus open incidents with acknowledgement." actions={<>
         <Button onClick={() => setRec(true)} disabled={!canWrite}>Record incident</Button><Button onClick={exportAll}><Download className="size-4" aria-hidden />Export CSV (up to 500)</Button></>} />
       <OpsTabs />
-      <div className="grid gap-5">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-5">
         <Card title="Open incidents and alerts">
           <Async q={inc}>{(d: any) => (<>
             <Note>{d.note}</Note>
@@ -70,7 +70,7 @@ export default function AuditPage() {
               { key: 'id', header: '#', sort: (x) => Number(x.id) }, { key: 'created_at', header: 'When', render: (x) => when(x.created_at), sort: (x) => x.created_at },
               { key: 'action', header: 'Action' }, { key: 'entity', header: 'Entity' }, { key: 'entity_id', header: 'Entity id', render: (x) => (x.entity_id ? String(x.entity_id).slice(0, 12) : '-') },
               { key: 'actor', header: 'Actor', render: (x) => (x.actor ? String(x.actor).slice(0, 8) : 'system') }, { key: 'environment', header: 'Env', render: (x) => x.environment ?? '-' },
-              { key: 'view', header: '', render: (x) => <Button variant="ghost" onClick={(e) => { e.stopPropagation(); setDetail(x); }} aria-label={`Details of event ${x.id}`}>Details</Button> }]} />
+              { key: 'view', header: 'Actions', render: (x) => <Button variant="ghost" onClick={(e) => { e.stopPropagation(); setDetail(x); }} aria-label={`Details of event ${x.id}`}>Details</Button> }]} />
             <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-[13px]"><span data-testid="audit-total">{d.total} event(s) match · showing {d.items.length ? offset + 1 : 0}-{offset + d.items.length}</span>
               <span className="flex gap-2"><Button disabled={offset === 0} onClick={() => setOffset(Math.max(0, offset - PAGE))}>Previous</Button><Button disabled={offset + PAGE >= d.total} onClick={() => setOffset(offset + PAGE)}>Next</Button></span></div>
             <p className="mt-2 text-[12px] text-muted">{d.immutable}</p></>)}</Async>

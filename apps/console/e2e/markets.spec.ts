@@ -31,10 +31,10 @@ test('markets: honest no-feed state, search by symbol/chain/contract/pair, tabs,
   await page.getByRole('tab', { name: 'All assets' }).click(); await search.fill('usd');
   const name = `view-${Date.now()}`;
   await page.getByRole('button', { name: 'Save current filters' }).click(); await page.getByLabel('View name').fill(name); await page.getByRole('button', { name: 'Save view' }).click();
-  await expect(page.getByRole('button', { name })).toBeVisible();
-  await page.reload(); await expect(page.getByRole('button', { name })).toBeVisible();
-  await page.getByLabel('Saved views').selectOption({ label: name }); await expect(search).toHaveValue('usd');
-  await page.getByRole('button', { name: `Delete saved view ${name}` }).click(); await expect(page.getByRole('button', { name })).toHaveCount(0);
+  await expect(page.getByRole('button', { name, exact: true })).toBeVisible();
+  await page.reload(); await expect(page.getByRole('button', { name, exact: true })).toBeVisible();
+  await page.getByLabel('Saved views', { exact: true }).selectOption({ label: name }); await expect(search).toHaveValue('usd');
+  await page.getByRole('button', { name: `Delete saved view ${name}` }).click(); await expect(page.getByRole('button', { name, exact: true })).toHaveCount(0);
 
   // cards mode + add by identity
   await page.getByRole('button', { name: 'Cards' }).click(); await expect(page.getByText('Price: no feed connected').first()).toBeVisible();

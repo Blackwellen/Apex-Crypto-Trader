@@ -68,7 +68,7 @@ export default function BasketsPage() {
                   { key: 'delta', header: 'Units to trade', align: 'right', text: (r) => r.action, render: (r) => <span><Badge tone={r.action === 'buy' ? 'good' : r.action === 'sell' ? 'warn' : 'neutral'}>{r.action}</Badge> {r.action !== 'hold' && formatUnits((r.deltaUnits < 0n ? -r.deltaUnits : r.deltaUnits).toString(), r.decimals)}</span> }]} />}
               {pv.outside.length > 0 && <p className="mt-2 text-[12px] text-muted">Held in the bucket but outside this basket (not rebalanced): {pv.outside.map((o) => `${formatUnits(o.amount, o.decimals)} ${o.symbol}`).join(', ')}.</p>}
             </Card>)}
-          <div className="mt-5 grid gap-5 lg:grid-cols-2">
+          <div className="mt-5 grid gap-5 lg:grid-cols-2 [&>*]:min-w-0">
             <Card title="Factor overlap">{overlaps.length === 0 ? <p className="text-[13px] text-muted">{d.baskets.length < 2 ? 'Needs at least two baskets to compare.' : 'No asset appears in more than one basket.'}</p> :
               <div role="alert" className="rounded-xl border border-[#f0dfb7] bg-warn-soft p-3 text-[13px] text-warn"><p className="font-semibold">Same asset in several baskets (hidden double exposure)</p><ul className="mt-1 list-disc pl-5">{overlaps.map((o) => <li key={o.asset}>{o.symbol}: {o.baskets.join(', ')}</li>)}</ul></div>}
               <p className="mt-3 text-[12px] text-muted">Return correlation and common-factor exposure are not computed: they need price history and no market-data feed is connected.</p></Card>

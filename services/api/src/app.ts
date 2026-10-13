@@ -126,7 +126,9 @@ export async function buildApp(pool: pg.Pool, cfg: Config): Promise<FastifyInsta
   }); });
 
   app.get('/v1/chain-registry', async (req) => read(req, async (c) => ({ items: (await c.query(
-    `select r.*, coalesce((select jsonb_object_agg(k.capability, jsonb_build_object('status', k.status, 'evidence', k.evidence_ref)) from chain_capabilities k where k.chain_id=r.id), '{}') capabilities from chain_registry r order by family, name`)).rows })));
+    `select r.id,r.namespace,r.chain_ref,r.family,r.name,r.is_testnet,r.native_symbol,r.native_decimals,r.finality_model,r.address_format,r.explorer_url,r.enabled,
+            (r.details - 'rpcCandidates') || jsonb_build_object('rpcOrigins', coalesce((select jsonb_agg(regexp_replace(u, '^(https?://[^/?#@]*@)?([^/?#]+).*$', '\\2')) from jsonb_array_elements_text(coalesce(r.details->'rpcCandidates','[]'::jsonb)) u), '[]'::jsonb)) as details,
+            coalesce((select jsonb_object_agg(k.capability, jsonb_build_object('status', k.status, 'evidence', k.evidence_ref)) from chain_capabilities k where k.chain_id=r.id), '{}') capabilities from chain_registry r order by family, name`)).rows })));
 
   // GET /v1/chains/:id/health now lives in routes/chains.ts (real probe-sample health; NOT_MEASURED without samples)
 

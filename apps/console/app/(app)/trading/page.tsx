@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { Async, Badge, Button, Card, ConfirmDialog, DataTable, EmptyState, Kpi, PageHeader, TabPanel, Tabs, useToast } from '@/components/ui';
 import { NeedWorkspace } from '@/components/onboarding';
+import { PaperEngineStrip } from '@/components/paper-status';
 import { useWs } from '@/components/hooks';
 import { useApi, useCommand } from '@/lib/api';
 import { useWorkspace } from '@/lib/workspace';
@@ -45,7 +46,7 @@ function OrdersTab({ rows, onOpen }: { rows: OrderRow[]; onOpen: (id: string) =>
     { key: 'slip', header: 'Slippage exp / real', align: 'right', text: (r) => slipCell(r.expected_slippage_bps, r.realised_slippage_bps) },
     { key: 'gas', header: 'Gas', align: 'right', text: (r) => gasCell(r.gas_native, r.native_decimals, r.native_symbol) },
     { key: 'venue', header: 'Venue', text: (r) => r.venue ?? '—' },
-    { key: 'view', header: '', text: () => '', render: (r) => <Button variant="ghost" onClick={(e) => { e.stopPropagation(); onOpen(r.id); }} aria-label={`View order ${r.id.slice(0, 8)}`}>View</Button> }]} />);
+    { key: 'view', header: 'Actions', text: () => '', render: (r) => <Button variant="ghost" onClick={(e) => { e.stopPropagation(); onOpen(r.id); }} aria-label={`View order ${r.id.slice(0, 8)}`}>View</Button> }]} />);
 }
 
 function Body() {
@@ -57,6 +58,7 @@ function Body() {
   return (<>
     <PageHeader title="Live Orders" description="Orders, positions and fills from the execution ledger with paper and live kept apart. Every number is a recorded value; slippage, gas and PnL that were not recorded show an em dash."
       actions={<><ExitOnly /><Button variant="primary" disabled={!canWrite} onClick={() => setTicket(true)}><Plus className="size-4" aria-hidden />New paper order</Button></>} />
+    <PaperEngineStrip />
     <Async q={orders}>{(o) => {
       const by = (env: string) => o.items.filter((x) => x.environment === env);
       const unknown = o.items.filter((x) => x.state === 'UNKNOWN').length; const waiting = o.items.filter((x) => x.state === 'RISK_EVALUATING' && !x.risk_decision).length;

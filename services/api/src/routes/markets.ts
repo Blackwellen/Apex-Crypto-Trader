@@ -26,6 +26,8 @@ export async function marketsRoutes(ctx: RouteCtx, _status: () => Promise<Resear
   const { app, read, one, cmd, q } = ctx;
   const uuid = z.string().uuid();
   const chainId = z.string().regex(/^[a-z0-9]+:[A-Za-z0-9_-]{1,64}$/);
+  /** EVM contract addresses are case-insensitive: canonical identity is lower-case (matches the DB trigger on assets). */
+  const canon = <T extends z.ZodTypeAny>(schema: T) => schema.transform((o: any) => ({ ...o, contract: String(o.chain).startsWith('eip155:') ? String(o.contract).toLowerCase() : o.contract })) as unknown as T;
   const contract = z.string().trim().min(1).max(128).regex(/^[A-Za-z0-9._:-]+$/);
 
   app.get('/v1/market/chains', async (req) => read(req, async (c) => ({ items: (await c.query(`select id, name, family, native_symbol, enabled, explorer_url, address_format, finality_model, is_testnet from chain_registry order by name`)).rows })));
@@ -69,7 +71,7 @@ export async function marketsRoutes(ctx: RouteCtx, _status: () => Promise<Resear
   });
 
   app.get('/v1/market/asset', async (req) => {
-    const p = q(z.object({ workspace: uuid, chain: chainId, contract }), req);
+    const p = q(canon(z.object({ workspace: uuid, chain: chainId, contract })), req);
     return read(req, async (c) => {
       const chain = await one(c, `select id, name, family, native_symbol, native_decimals, enabled, explorer_url, address_format, finality_model, is_testnet from chain_registry where id=$1`, [p.chain]);
       if (!chain) throw httpErr(404, 'not_found', 'unknown chain');
@@ -96,7 +98,7 @@ export async function marketsRoutes(ctx: RouteCtx, _status: () => Promise<Resear
         from token_lifecycles l join chain_registry cr on cr.id = l.chain_id
         left join watchlist_items w on w.workspace_id = l.workspace_id and w.chain_id = l.chain_id and w.contract = l.contract
         where l.workspace_id=$1 order by l.stage_observed_at desc limit 500`, [p.workspace])).rows;
-      const strategies = (await c.query(`select key, name, stage, allowed_families from strategy_definitions order by key`)).rows;
+      const strategies = (await c.query(`select key, name, stage, allowed_families::text[] allowed_families from strategy_definitions order by key`)).rows;
       return { items, strategies, stages: STAGES };
     });
   });
@@ -107,10 +109,10 @@ export async function marketsRoutes(ctx: RouteCtx, _status: () => Promise<Resear
     filters: z.object({ tab: z.enum(TABS).optional(), q: z.string().max(200).optional(), chain: z.string().max(80).optional(), stage: z.enum(STAGES).optional() }).strict() }).strict(),
     async (c, b) => ({ id: (await one(c, `select api_save_market_view($1,$2,$3,$4::jsonb) id`, [b.workspace, b.page, b.name, JSON.stringify(b.filters)])).id }));
   cmd('deleteMarketView', z.object({ view: uuid }).strict(), async (c, b) => { await c.query(`select api_delete_market_view($1)`, [b.view]); return {}; });
-  cmd('watchAsset', z.object({ workspace: ws, chain: chainId, contract, symbol: z.string().trim().max(40).optional(), note: z.string().max(300).optional() }).strict(),
+  cmd('watchAsset', canon(z.object({ workspace: ws, chain: chainId, contract, symbol: z.string().trim().max(40).optional(), note: z.string().max(300).optional() }).strict()),
     async (c, b) => ({ id: (await one(c, `select api_watch_asset($1,$2,$3,$4,$5) id`, [b.workspace, b.chain, b.contract, b.symbol ?? null, b.note ?? null])).id }));
-  cmd('unwatchAsset', z.object({ workspace: ws, chain: chainId, contract }).strict(), async (c, b) => { await c.query(`select api_unwatch_asset($1,$2,$3)`, [b.workspace, b.chain, b.contract]); return {}; });
-  cmd('logTokenObservation', z.object({ workspace: ws, chain: chainId, contract, symbol: z.string().trim().min(1).max(40), stage: z.enum(STAGES),
-    observedAt: z.string().datetime({ offset: true }), source: z.string().trim().min(2).max(200), evidenceRef: z.string().trim().max(500).optional(), note: z.string().max(500).optional() }).strict(),
+  cmd('unwatchAsset', canon(z.object({ workspace: ws, chain: chainId, contract }).strict()), async (c, b) => { await c.query(`select api_unwatch_asset($1,$2,$3)`, [b.workspace, b.chain, b.contract]); return {}; });
+  cmd('logTokenObservation', canon(z.object({ workspace: ws, chain: chainId, contract, symbol: z.string().trim().min(1).max(40), stage: z.enum(STAGES),
+    observedAt: z.string().datetime({ offset: true }), source: z.string().trim().min(2).max(200), evidenceRef: z.string().trim().max(500).optional(), note: z.string().max(500).optional() }).strict()),
     async (c, b) => one(c, `select api_log_token_observation($1,$2,$3,$4,$5,$6::timestamptz,$7,$8,$9) r`, [b.workspace, b.chain, b.contract, b.symbol, b.stage, b.observedAt, b.source, b.evidenceRef ?? null, b.note ?? null]).then((r) => r.r));
 }

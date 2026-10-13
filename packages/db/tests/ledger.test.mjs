@@ -144,3 +144,10 @@ test('concurrent competing transfers cannot double-spend the same funds', async 
   assert.equal(res.filter((r) => r.status === 'fulfilled').length, 3);
   await db.asService(async (c) => { assert.equal(await balance(c, w8.ws, w8.bucket, w8.wca, w8.USDC, 'pending_out'), 90n); await assertConserved(c, w8.ws); });
 });
+
+test('canonical token identity: EVM contract case variants resolve to one asset', async () => {
+  await db.asService(async (c) => {
+    await c.query(`insert into assets(chain_id,contract,symbol,decimals) values ('eip155:1','0xAbCdEf0000000000000000000000000000000001','T',6)`);
+    await assert.rejects(c.query(`insert into assets(chain_id,contract,symbol,decimals) values ('eip155:1','0xABCDEF0000000000000000000000000000000001','T',6)`), /duplicate key/);
+  });
+});

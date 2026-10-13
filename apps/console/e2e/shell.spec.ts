@@ -29,7 +29,8 @@ test('login -> first-run workspace creation -> dashboard shows locked live + pap
 test('emergency stop requires typing STOP, halts entries, and disables paper start', async ({ page }) => {
   await login(page); await createWorkspaceIfNeeded(page);
   await page.getByRole('button', { name: 'Start paper engine' }).click();
-  await expect(page.getByText('Paper engine running').first()).toBeVisible();
+  // the badge is truthful: with no engine process alive it reads 'Paper engine ON · process NOT RUNNING' (see e2e/paper-pipeline.spec.ts for the running case)
+  await expect(page.getByText(/Paper engine (running|ON)/).first()).toBeVisible();
   await page.getByRole('button', { name: 'Emergency stop' }).click();
   const confirm = page.getByRole('button', { name: 'Stop new entries' }); await expect(confirm).toBeDisabled();
   await page.getByLabel('Type STOP to confirm').fill('STOP'); await confirm.click();

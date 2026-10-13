@@ -62,8 +62,8 @@ before(async () => {
   db = await freshDb();
   await db.pool.query(`insert into auth.users(id,email) values ($1,'a@t'),($2,'b@t'),($3,'v@t')`, [users.a, users.b, users.v]);
   await db.pool.query(`insert into chain_registry(id,namespace,chain_ref,family,name,native_symbol,native_decimals,finality_model,address_format) values
-    ('eip155:1','eip155','1','evm','Ethereum','ETH',18,'probabilistic','0x-hex20'),('solana:mainnet','solana','mainnet','svm','Solana','SOL',9,'confirmed','base58'),('coinbase:spot','coinbase','spot','cex','Coinbase Exchange','USD',2,'n/a','n/a')`);
-  await db.pool.query(`insert into assets(chain_id,contract,symbol,decimals) values ('eip155:1','native','ETH',18),('eip155:1','0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48','USDC',6),('eip155:1','0xdAC17F958D2ee523a2206206994597C13D831ec7','USDT',6),('coinbase:spot','BTC-USD','BTC',8)`);
+    ('eip155:1','eip155','1','evm','Ethereum','ETH',18,'probabilistic','0x-hex20'),('solana:mainnet','solana','mainnet','svm','Solana','SOL',9,'confirmed','base58'),('coinbase:spot','coinbase','spot','cex','Coinbase Exchange','USD',2,'n/a','n/a') on conflict (id) do nothing`);
+  await db.pool.query(`insert into assets(chain_id,contract,symbol,decimals) values ('eip155:1','native','ETH',18),('eip155:1','0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48','USDC',6),('eip155:1','0xdAC17F958D2ee523a2206206994597C13D831ec7','USDT',6),('coinbase:spot','BTC-USD','BTC',8) on conflict (chain_id,contract) do nothing`);
   tok = { a: await signDevToken(users.a, secret), b: await signDevToken(users.b, secret), v: await signDevToken(users.v, secret) };
   app = await mkApp(fakeUrl); appDown = await mkApp('http://127.0.0.1:1'); appReal = await mkApp(REAL_URL);
   W = (await cmd(app, 'createWorkspace', 'a', { name: 'Alpha' })).json().result.id;
@@ -229,6 +229,8 @@ test('lifecycle: observations create/advance, late ones keep history without rew
   r = await cmd(app, 'logTokenObservation', 'a', { ...base, stage: 'bonding_curve', observedAt: t1 }); assert.equal(r.json().result.appliedAsCurrent, true);
   r = await cmd(app, 'logTokenObservation', 'a', { ...base, stage: 'observed', observedAt: tOld }); assert.equal(r.json().result.appliedAsCurrent, false);
   const lc = (await call(app, 'GET', `/v1/market/lifecycles?workspace=${W}`, 'a')).json();
+  await db.pool.query(`insert into strategy_definitions(key,version,name,allowed_families) values ('meme_scalp',1,'Meme scalp','{evm,svm}')`);
+  const lc2 = (await call(app, 'GET', `/v1/market/lifecycles?workspace=${W}`, 'a')).json(); assert.deepEqual(lc2.strategies.find((x: any) => x.key === 'meme_scalp').allowed_families, ['evm', 'svm']);
   assert.equal(lc.items.length, 1); assert.equal(lc.items[0].stage, 'bonding_curve'); assert.ok(lc.stages.includes('graduating'));
   const asset = (await call(app, 'GET', `/v1/market/asset?workspace=${W}&chain=solana:mainnet&contract=${base.contract}`, 'a')).json();
   assert.equal(asset.events.length, 3); assert.equal(asset.identity.inRegistry, false); assert.equal(asset.lifecycle.stage, 'bonding_curve');

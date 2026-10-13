@@ -13,9 +13,10 @@ export async function login(page: Page, email = `e2e-${Date.now()}@apex.test`) {
   return email;
 }
 export async function a11y(page: Page, label: string) {
+  await page.waitForTimeout(800); // let enter animations (toasts) finish: axe samples mid-fade colours otherwise
   const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze();
   const serious = r.violations.filter((v) => ['serious', 'critical'].includes(v.impact ?? ''));
-  expect(serious.map((v) => `${v.id}: ${v.help} (${v.nodes.length} nodes)`), `axe violations on ${label}`).toEqual([]);
+  expect(serious.map((v) => `${v.id}: ${v.help} (${v.nodes.length} nodes) ${v.nodes[0]?.html?.slice(0, 160)}`), `axe violations on ${label}`).toEqual([]);
 }
 export async function createWorkspaceIfNeeded(page: Page) {
   // wait for the workspace query to settle: either the first-run card or the live controls appear

@@ -64,7 +64,7 @@ export default function TreasuryPage() {
     <NeedWorkspace>
       <PageHeader title="Treasury and Tax" description="Cash-flow reconciliation, fees, realised results and protected balances, all derived from the internal ledger. Internal transfers are shown separately and excluded from performance."
         actions={<Button variant="primary" disabled={!canAdmin} title={canAdmin ? undefined : 'Owner/admin only'} onClick={() => setAdd(true)}>Add reconciliation exception</Button>} />
-      <Async q={cf}>{(d: any) => (<div className="grid gap-5">
+      <Async q={cf}>{(d: any) => (<div className="grid grid-cols-[minmax(0,1fr)] gap-5">
         <Note>{d.notes.scope}</Note>
         <Card title="Cash-flow reconciliation" action={<Export name="cashflow-reconciliation.csv" header={['environment', 'asset', 'deposits', 'allocations', 'vault_releases', 'expected_pool', 'ledger_pool', 'difference', 'decimals']}
           rows={recon.map((r: any) => [r.environment, r.symbol, r.deposits, r.allocations, r.vault_releases, r.expectedPool.toString(), r.poolBal.toString(), r.diff.toString(), String(r.decimals)])} />}>
@@ -86,7 +86,7 @@ export default function TreasuryPage() {
           <p className="mt-2 text-[12px] text-muted">Moving capital between your own buckets is not profit or loss and is not counted in realised PnL or fees below.</p>
         </Card>
 
-        <div className="grid gap-5 xl:grid-cols-2">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-5 xl:grid-cols-2">
           <Card title="Fees paid by asset and bucket" action={<Export name="fees.csv" header={['environment', 'bucket', 'asset', 'fees_base_units', 'decimals']} rows={d.fees.map((x: any) => [x.environment, x.bucket_name ?? '', x.symbol, x.fees, String(x.decimals)])} />}>
             {d.fees.length === 0 ? <EmptyState title="No fees recorded" /> : <Table caption="Fees" rows={d.fees.map((x: any, i: number) => ({ ...x, id: String(i) }))} cols={[{ key: 'bucket_name', header: 'Bucket', filter: true }, { key: 'symbol', header: 'Asset', filter: true }, { key: 'fees', header: 'Fees', align: 'right', render: (x: any) => f(x.fees, x.decimals) }, { key: 'environment', header: 'Env', render: (x: any) => <EnvBadge env={x.environment} />, text: (x: any) => x.environment }]} />}
           </Card>
@@ -96,7 +96,7 @@ export default function TreasuryPage() {
           </Card>
         </div>
 
-        <div className="grid gap-5 xl:grid-cols-2">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-5 xl:grid-cols-2">
           <Card title="Protected vault balances" action={<Export name="vault-balances.csv" header={['environment', 'bucket', 'asset', 'balance_base_units', 'decimals']} rows={d.held.filter((h: any) => h.state === 'vault').map((x: any) => [x.environment, x.bucket_name, x.symbol, x.balance, String(x.decimals)])} />}>
             {(() => { const v = d.held.filter((h: any) => h.state === 'vault'); return v.length === 0 ? <EmptyState title="Nothing in protected vaults" /> : <Table caption="Protected vault balances" rows={v.map((x: any, i: number) => ({ ...x, id: String(i) }))} cols={[{ key: 'bucket_name', header: 'Vault' }, { key: 'symbol', header: 'Asset' }, { key: 'balance', header: 'Balance', align: 'right', render: (x: any) => f(x.balance, x.decimals) }]} />; })()}
           </Card>

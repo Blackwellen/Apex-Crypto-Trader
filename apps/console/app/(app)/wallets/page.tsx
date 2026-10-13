@@ -50,7 +50,7 @@ export default function WalletsPage() {
             { key: 'exposure', header: 'Exposure by bucket', text: (w) => w.allocations.map((a) => bname.get(a.bucket_id)?.name ?? '').join(' '), render: exposure },
             { key: 'ledger', header: 'Ledger balances', text: () => '', render: led },
           ]} /></Card>
-          : <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3" aria-label="Wallet cards">{d.items.map((w) => (
+          : <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 [&>*]:min-w-0" aria-label="Wallet cards">{d.items.map((w) => (
             <li key={w.id}><Card className="h-full" pad>
               <div className="flex items-start justify-between gap-2"><div className="min-w-0"><h2 className="truncate text-[16px] font-semibold"><Link href={`/wallets/${w.id}`} className="hover:underline">{w.nickname}</Link></h2><Mono className="text-muted">{shortAddr(w.address)}</Mono></div><WalletStateBadge state={w.state} /></div>
               <div className="mt-3 flex flex-wrap gap-1"><Badge>{w.family}</Badge><CapabilityBadge cap={w.capability} />{w.capability === 'watch_only' && <Badge tone="good" title="APEX cannot sign or move funds from this wallet">cannot sign</Badge>}</div>

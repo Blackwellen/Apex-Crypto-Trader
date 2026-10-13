@@ -17,9 +17,9 @@ let USDC: string, ETH: string;
 before(async () => {
   db = await freshDb();
   await db.pool.query(`insert into auth.users(id,email) values ($1,'a@t'),($2,'b@t'),($3,'t@t')`, [users.a, users.b, users.t]);
-  await db.pool.query(`insert into chain_registry(id,namespace,chain_ref,family,name,native_symbol,native_decimals,finality_model,address_format) values ('eip155:1','eip155','1','evm','Ethereum','ETH',18,'probabilistic','0x-hex20'),('solana:mainnet','solana','mainnet','svm','Solana','SOL',9,'confirmed','base58-32')`);
-  const r = await db.pool.query(`insert into assets(chain_id,contract,symbol,decimals) values ('eip155:1','native','ETH',18),('eip155:1','0xusdc','USDC',6) returning id,symbol`);
-  USDC = r.rows.find((x: any) => x.symbol === 'USDC').id; ETH = r.rows.find((x: any) => x.symbol === 'ETH').id;
+  await db.pool.query(`insert into chain_registry(id,namespace,chain_ref,family,name,native_symbol,native_decimals,finality_model,address_format) values ('eip155:1','eip155','1','evm','Ethereum','ETH',18,'probabilistic','0x-hex20'),('solana:mainnet','solana','mainnet','svm','Solana','SOL',9,'confirmed','base58-32') on conflict (id) do nothing`);   // later migrations may already seed the registry
+  await db.pool.query(`insert into assets(chain_id,contract,symbol,decimals) values ('eip155:1','native','ETH',18),('eip155:1','0xusdc','USDC',6) on conflict (chain_id,contract) do nothing`);
+  USDC = (await db.pool.query(`select id from assets where chain_id='eip155:1' and contract='0xusdc'`)).rows[0].id; ETH = (await db.pool.query(`select id from assets where chain_id='eip155:1' and contract='native'`)).rows[0].id;
   const url = db.url.replace('postgres@', 'apex_app:apex_app@');
   pool = makePool(url);
   const cfg = { ...loadConfig({ SUPABASE_JWT_SECRET: secret, DATABASE_URL: url } as any), devAuth: true, devAdminDatabaseUrl: db.url, rateLimitMax: 100000 };
@@ -155,4 +155,26 @@ test('concurrent identical allocate with one idempotency key does not double-fun
   assert.ok(rs.every((r) => r.statusCode === 200), rs.map((r) => r.body).join('|'));
   const bal = (await call('GET', `/v1/buckets/${b}`, 'a')).json().balances.find((x: any) => x.state === 'available' && x.symbol === 'USDC');
   assert.equal(bal.amount, '600');
+});
+
+test('wallet accounts + bucket waterfall endpoints: auth, RLS isolation, shape', async () => {
+  assert.equal((await call('GET', `/v1/wallets/accounts?workspace=${W}`, null)).statusCode, 401);
+  assert.equal((await call('GET', `/v1/buckets/${B1}/waterfall`, null)).statusCode, 401);
+  const a = (await call('GET', `/v1/wallets/accounts?workspace=${W}`, 'a')).json();
+  assert.ok(a.accounts.length >= 3); assert.ok(a.accounts.every((x: any) => x.chain_id && x.address && x.family));
+  assert.ok(a.balances.some((x: any) => x.symbol === 'USDC' && x.state === 'available'));
+  assert.match(a.note, /not available until a certified read adapter/);
+  const other = (await call('GET', `/v1/wallets/accounts?workspace=${W}`, 'b')).json(); assert.deepEqual(other.accounts, []); assert.deepEqual(other.balances, []);
+  const wf = (await call('GET', `/v1/buckets/${B1}/waterfall`, 'a')).json(); assert.deepEqual(wf.executions, []);
+  assert.equal((await call('GET', `/v1/buckets/${B1}/waterfall`, 'b')).statusCode, 404);
+  assert.equal((await call('GET', `/v1/buckets/nope/waterfall`, 'a')).statusCode, 400);
+  assert.equal((await call('GET', `/v1/wallets/accounts`, 'a')).statusCode, 400, 'workspace is required');
+});
+
+test('validation: lifecycle and move commands reject unknown fields and bad ids', async () => {
+  assert.equal((await cmd('pauseWallet', 'a', { wallet: 'x', reason: 'abc' })).statusCode, 400);
+  assert.equal((await cmd('pauseWallet', 'a', { wallet: WAL, reason: 'abc', extra: 1 })).statusCode, 400);
+  assert.equal((await cmd('moveWalletBucket', 'a', { wallet: WAL, fromBucket: B1, toBucket: B2, maxAllocationBps: 0 })).statusCode, 400);
+  assert.equal((await call('POST', '/v1/commands/revokeWallet', 'a', { wallet: WAL, reason: 'abc' })).statusCode, 400, 'idempotency key required');
+  assert.equal((await cmd('revokeWallet', 'a', { wallet: WAL, reason: 'abc', privateKey: '0x1' })).json().error, 'secret_field_rejected');
 });

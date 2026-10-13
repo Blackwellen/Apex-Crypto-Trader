@@ -21,7 +21,7 @@ export default function JobsPage() {
       <Async q={sum}>{(d: any) => {
         const n = (st: string[]) => d.groups.filter((g: any) => st.includes(g.status)).reduce((a: number, g: any) => a + g.n, 0);
         const total = d.groups.reduce((a: number, g: any) => a + g.n, 0);
-        return (<div className="grid gap-5">
+        return (<div className="grid grid-cols-[minmax(0,1fr)] gap-5">
           <Note tone="warn"><strong>Worker status:</strong> {d.note} Evidence in the table: {d.workerEvidence.jobsHoldingALock} job(s) hold a worker lock, {d.workerEvidence.jobsRunning} marked running{d.workerEvidence.newestJobAt ? `, newest job ${when(d.workerEvidence.newestJobAt)}` : ', no jobs have ever been enqueued'}.</Note>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
             <Kpi label="Total jobs" value={total} /><Kpi label="Queued" value={n(['queued'])} /><Kpi label="Running" value={n(['running'])} /><Kpi label="Done" value={n(['done'])} tone="good" />

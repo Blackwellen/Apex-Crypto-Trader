@@ -30,7 +30,11 @@ export async function sweep(page: Page, name: string) {
     await page.setViewportSize({ width: v.w, height: v.h }); await page.waitForTimeout(250);
     await page.screenshot({ path: `${SHOTS}/${name}-${v.w}.png`, fullPage: true });
     await a11y(page, `${name}@${v.w}`);
-    const offenders = await page.evaluate(() => { const w = window.innerWidth; return document.documentElement.scrollWidth > w + 1 ? [...document.querySelectorAll('body *')].filter((e) => e.getBoundingClientRect().right > w + 1).slice(0, 5).map((e) => `${e.tagName}.${String(e.className).slice(0, 50)}@${Math.round(e.getBoundingClientRect().right)}`) : []; });
+    const offenders = await page.evaluate(() => {
+      const w = window.innerWidth; if (document.documentElement.scrollWidth <= w + 1) return [];
+      const clipped = (e: Element) => { for (let p = e.parentElement; p && p !== document.body; p = p.parentElement) { const o = getComputedStyle(p).overflowX; if (o === 'auto' || o === 'scroll' || o === 'hidden' || o === 'clip') return true; } return false; };
+      return [...document.querySelectorAll('body *')].filter((e) => e.getBoundingClientRect().right > w + 1 && !clipped(e)).slice(0, 5).map((e) => `${e.tagName}.${String(e.className).slice(0, 60)}@${Math.round(e.getBoundingClientRect().right)}`);
+    });
     expect(offenders, `horizontal overflow on ${name} at ${v.w}px`).toEqual([]);
   }
   await page.setViewportSize({ width: 1440, height: 900 });

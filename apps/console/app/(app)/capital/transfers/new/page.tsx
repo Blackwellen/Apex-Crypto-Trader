@@ -151,7 +151,7 @@ function VaultRelease({ workspace }: { workspace: string }) {
   const rows = (alloc.data?.approvals ?? []).filter((x: any) => x.kind === 'vault_release');
   const now = Date.now();
   return (
-    <div className="grid gap-5">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-5">
       <Card title="Four-eyes and delay rules">
         <ul className="list-disc space-y-1 pl-5 text-[13px] text-[#44546a]"><li>Only an <strong>owner</strong> can request a release.</li><li>A <strong>different owner</strong> must approve: the requester can never approve their own request (database rule <code>approver_differs</code>).</li>
           <li>Funds can be released only after the delay stored on the request (<code>not_before</code>, 24 hours from request) and only by an owner.</li><li>Release is one idempotent ledger entry; executing twice is a no-op.</li></ul>

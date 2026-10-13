@@ -33,7 +33,7 @@ export function OrderDrawer({ id, onClose }: { id: string | null; onClose: () =>
     <Dialog open={!!id} onClose={onClose} side title={o ? `${o.side.toUpperCase()} ${o.base_symbol}/${o.quote_symbol}` : 'Order'}
       footer={o && isCancellable(o.state) ? <Button variant="danger" disabled={!canWrite} onClick={() => setConfirm(true)}>Cancel order</Button> : undefined}>
       {q.isLoading ? <LoadingBlock /> : q.error ? <ErrorState error={q.error} retry={() => q.refetch()} /> : d && o ? (
-        <div className="space-y-5 text-[13px]">
+        <div className="space-y-5 text-[13px]" tabIndex={0} role="region" aria-label="Order details">
           <div className="flex flex-wrap items-center gap-2"><EnvBadge env={o.environment} /><Badge tone={o.state === 'UNKNOWN' ? 'warn' : 'neutral'}>{o.state}</Badge><span className="text-muted">{o.strategy_key}</span></div>
           {(() => { const n = stateNote({ state: o.state, risk_decision: d.decisions.at(-1)?.decision ?? null }); return n ? <Note tone={n.tone === 'warn' ? 'warn' : 'neutral'}>{n.text}</Note> : null; })()}
           <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5">

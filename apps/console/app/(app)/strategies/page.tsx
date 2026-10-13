@@ -76,11 +76,11 @@ function Body() {
             { key: 'cov', header: 'Chain coverage', text: coverageText },
             { key: 'evidence', header: 'Evidence', filter: true, text: (x) => (x.has_evidence ? 'recorded' : 'none'), render: (x) => (x.has_evidence ? <Badge tone="good">Recorded</Badge> : <span className="text-muted">None</span>) },
             { key: 'enabled', header: 'Enabled buckets', text: (x) => { const e = x.instances.filter((i) => i.enabled); return e.length ? e.map((i) => i.bucket).join(', ') : 'none'; } },
-            { key: 'act', header: '', text: () => '', render: actions }]} />
+            { key: 'act', header: 'Actions', text: () => '', render: actions }]} />
           : rows.length === 0 ? <EmptyState title="No matching strategies" hint="Adjust your search or stage filter." />
           : <div className="grid gap-5 lg:grid-cols-2 2xl:grid-cols-3">{rows.map((x) => (
-            <article key={`${x.key}@${x.version}`} className="flex flex-col rounded-2xl border border-line bg-card p-5 shadow-card" aria-label={x.name}>
-              <header className="flex items-start justify-between gap-2"><h2 className="text-[15px] font-semibold"><Link className="hover:underline" href={`/strategies/${encodeURIComponent(x.key)}`}>{x.name}</Link></h2><Badge tone={stageTone(x.stage)}>{stageLabel(x.stage)}</Badge></header>
+            <article key={`${x.key}@${x.version}`} className="flex min-w-0 flex-col rounded-2xl border border-line bg-card p-5 shadow-card" aria-label={x.name}>
+              <header className="flex flex-wrap items-start justify-between gap-2"><h2 className="text-[15px] font-semibold"><Link className="hover:underline" href={`/strategies/${encodeURIComponent(x.key)}`}>{x.name}</Link></h2><Badge tone={stageTone(x.stage)}>{stageLabel(x.stage)}</Badge></header>
               <p className="mt-2 text-[13px] text-muted">{x.summary || 'No description.'}</p>
               <dl className="mt-3 space-y-1 text-[12px]"><div><dt className="inline font-semibold">Coverage: </dt><dd className="inline text-muted">{coverageText(x)}</dd></div>
                 <div><dt className="inline font-semibold">Evidence: </dt><dd className="inline text-muted">{x.has_evidence ? 'recorded' : 'none recorded (No runs yet)'}</dd></div>

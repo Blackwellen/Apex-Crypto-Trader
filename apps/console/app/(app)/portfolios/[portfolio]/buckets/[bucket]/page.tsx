@@ -52,13 +52,13 @@ function Body({ id }: { id: string }) {
           {symbols.length === 0 ? <Card><EmptyState title="No ledger balance in this bucket" hint={paper ? 'Assign a wallet with a network, record a PAPER deposit into the wallet, then allocate it to this bucket.' : 'Live balances come from reconciliation only.'} /></Card> :
             symbols.map((s) => { const r = d.balances.filter((x) => x.symbol === s); const dec = r[0].decimals; const f = (st: string[]) => formatUnits(sum(r, st), dec);
               return <div key={s} className="mb-5"><h2 className="mb-2 text-[12px] font-bold uppercase tracking-wider text-muted">{s} · {paper ? 'paper ledger' : 'live ledger'}</h2>
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5 [&>*]:min-w-0">
                   <Kpi label="Spendable" value={f(['available'])} sub="Unreserved, tradeable" />
                   <Kpi label="Reserved for orders" value={f(['reserved'])} sub="Held by open reservations" tone="warn" />
                   <Kpi label="In flight" value={f(['pending_out', 'pending_bridge'])} sub="Pending transfers/bridges" tone="warn" />
                   <Kpi label="Protected vault" value={f(['vault'])} sub="Never tradeable" />
                   <Kpi label="Fee reserve" value={f(['fee_reserve'])} sub={`Restricted/tax: ${f(['restricted'])}`} /></div></div>; })}
-          <div className="grid gap-5 lg:grid-cols-3">
+          <div className="grid gap-5 lg:grid-cols-3 [&>*]:min-w-0">
             <Card title="Bucket facts"><dl className="space-y-2 text-[13px]"><div className="flex justify-between"><dt>High-water mark</dt><dd className="tabular">{d.highWaterMark ?? 'not set'}</dd></div><div className="flex justify-between"><dt>Wallets</dt><dd>{d.wallets.length}</dd></div><div className="flex justify-between"><dt>Strategy budgets</dt><dd>{budgets.length}</dd></div><div className="flex justify-between"><dt>Open reservations</dt><dd>{reservations.filter((r: any) => r.status === 'held').length}</dd></div>
               <div className="flex justify-between"><dt>Deficits to recover</dt><dd>{d.deficits.length ? d.deficits.map((x) => `${formatUnits(x.amount, assetOf(x.quote_asset)?.decimals ?? 0)} ${assetOf(x.quote_asset)?.symbol ?? ''}`).join(', ') : 'none'}</dd></div></dl></Card>
             <Card title="Fee reserve widget" className="lg:col-span-2">{(() => { const fr = d.balances.filter((x) => x.state === 'fee_reserve'); return fr.length === 0 ? <p className="text-[13px] text-muted">No fee reserve is held in this bucket. Chain-specific gas telemetry needs a certified chain adapter; none is connected.</p> : <ul className="space-y-1 text-[13px]">{fr.map((x, i) => <li key={i} className="tabular"><strong>{x.chain_id}</strong>: {formatUnits(x.amount, x.decimals)} {x.symbol}</li>)}</ul>; })()}</Card>
@@ -107,7 +107,7 @@ function Body({ id }: { id: string }) {
 
         <TabPanel id="compounding" value={tab}>
           <div className="mb-3 flex justify-end"><Button variant="primary" onClick={() => setWfd(true)} disabled={!canAdmin} title={canAdmin ? undefined : 'Owner or admin role required'}>Apply waterfall policy</Button></div>
-          <div className="grid gap-5 lg:grid-cols-2">
+          <div className="grid gap-5 lg:grid-cols-2 [&>*]:min-w-0">
             <Card title="Active waterfall policy">{!pol ? <EmptyState title="No compounding policy" hint="Until a policy exists, realised profit is not distributed by the waterfall." /> : (<div className="space-y-3 text-[13px]">
               <p>Version {pol.version} · mode <strong>{pol.mode.replace(/_/g, ' ')}</strong> · saved {when(pol.created_at)}</p>
               <StackedBar parts={[{ label: 'Reinvest', value: pol.reinvest_bps, color: '#2758da' }, { label: 'Vault', value: pol.vault_bps, color: '#006f55' }, { label: 'Cross-bucket', value: pol.cross_bucket_bps, color: '#8a5f10' }, { label: 'Reserve', value: pol.reserve_bps, color: '#7a8aa5' }]} />

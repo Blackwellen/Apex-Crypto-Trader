@@ -52,9 +52,9 @@ function Toggle({ c }: { c: Chain }) {
 
 function ChainCard({ c }: { c: Chain }) {
   return (
-    <article className="flex flex-col rounded-2xl border border-line bg-card p-5 shadow-card" aria-label={c.name}>
-      <header className="flex items-start justify-between gap-3">
-        <div><h2 className="text-[16px] font-semibold tracking-tight"><Link className="hover:underline" href={`/chains/${encodeURIComponent(c.id)}`}>{c.name}</Link></h2>
+    <article className="flex min-w-0 flex-col rounded-2xl border border-line bg-card p-5 shadow-card" aria-label={c.name}>
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0"><h2 className="text-[16px] font-semibold tracking-tight"><Link className="hover:underline" href={`/chains/${encodeURIComponent(c.id)}`}>{c.name}</Link></h2>
           <p className="text-[12px] text-muted">{c.id}</p></div>
         <div className="flex flex-wrap justify-end gap-1.5"><Badge>{c.family}</Badge>{c.is_testnet && <Badge tone="warn">testnet</Badge>}<Badge tone={c.enabled ? 'accent' : 'neutral'}>{c.enabled ? 'Monitoring on' : 'Disabled'}</Badge>{c.registry_unverified && <Badge tone="warn" title={`Registry fields not yet verified against primary sources: ${c.unverified_fields.join(', ') || 'unspecified'}`}>Unverified record</Badge>}</div>
       </header>
