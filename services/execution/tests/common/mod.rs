@@ -100,7 +100,7 @@ pub async fn seed_world(t: &TestDb, funds: u128) -> World {
     c.execute("select api_assign_wallet($1,$2,true,10000,false)", &[&wallet, &bucket]).await.unwrap();
     let wca: Uuid = c.query_one("select id from wallet_chain_accounts where wallet_id=$1", &[&wallet]).await.unwrap().get(0);
     c.execute("select api_paper_deposit($1,$2,$3,$4::text::numeric,'dep1')", &[&ws, &wca, &usdc, &funds.to_string()]).await.unwrap();
-    c.execute("select api_allocate($1,$2,$3,$4::text::numeric,'alloc1')", &[&ws, &bucket, &wca, &usdc, &funds.to_string()]).await.unwrap();
+    c.execute("select api_allocate($1,$2,$3,$4,$5::text::numeric,'alloc1')", &[&ws, &bucket, &wca, &usdc, &funds.to_string()]).await.unwrap();
     c.batch_execute("commit").await.unwrap();
     World { ws, bucket, wca, eth, usdc, funds }
 }

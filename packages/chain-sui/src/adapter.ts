@@ -37,7 +37,7 @@ export class SuiChainAdapter implements ChainAdapter {
   async getTransactionStatus(chainId: string, digest: string): Promise<TxStatus> {
     const t = await this.d.clientFor(chainId).getTransaction(digest);
     if (!t) return { state: 'unknown', detail: 'digest not found on this node (reconcile before retry)' };
-    if (t.effects.status === 'failure') return { state: t.checkpoint !== undefined ? 'failed' : 'failed', detail: t.effects.error ?? 'execution failure (gas still charged)' };
+    if (t.effects.status === 'failure') return { state: 'failed', detail: t.effects.error ?? 'execution failure (gas still charged)' };
     return t.checkpoint !== undefined ? { state: 'final', detail: `checkpoint ${t.checkpoint}` } : { state: 'included', detail: 'executed, not yet in a checkpoint' };
   }
   async submit(chainId: string): Promise<{ txId: string }> { assertCertified(this.capabilities(chainId), chainId, 'submit'); throw new Error('submit not implemented in read-only build'); }

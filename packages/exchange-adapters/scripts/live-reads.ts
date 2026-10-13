@@ -10,9 +10,15 @@ import { CoinbasePublicVenue, COINBASE_WS_URL } from '../src/index.ts';
 type R = { section: string; name: string; status: 'PASS' | 'BLOCKED'; detail: string; ms: number };
 const results: R[] = [];
 async function check(section: string, name: string, fn: () => Promise<string>): Promise<void> {
-  const t = Date.now();
-  try { results.push({ section, name, status: 'PASS', detail: await fn(), ms: Date.now() - t }); }
-  catch (e) { results.push({ section, name, status: 'BLOCKED', detail: `${(e as Error).name}: ${(e as Error).message}${(e as any).cause ? ' / ' + String((e as any).cause?.message ?? (e as any).cause) : ''}`.slice(0, 400), ms: Date.now() - t }); }
+  await new Promise((r) => setTimeout(r, 1300)); // polite pacing: public endpoints (TronGrid, toncenter) rate-limit unauthenticated callers
+  const t = Date.now(); let firstErr = '';
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try { const d = await fn(); results.push({ section, name, status: 'PASS', detail: d + (firstErr ? ` [passed on attempt 2; attempt 1 failed: ${firstErr}]` : ''), ms: Date.now() - t }); return; }
+    catch (e) {
+      const msg = `${(e as Error).name}: ${(e as Error).message}${(e as any).cause ? ' / ' + String((e as any).cause?.message ?? (e as any).cause) : ''}`.slice(0, 300);
+      if (attempt === 1) { firstErr = msg; await new Promise((r) => setTimeout(r, 6000)); } else results.push({ section, name, status: 'BLOCKED', detail: `${msg} [2 attempts; attempt 1: ${firstErr}]`, ms: Date.now() - t });
+    }
+  }
 }
 const must = (c: unknown, m: string) => { if (!c) throw new Error('assertion failed: ' + m); };
 

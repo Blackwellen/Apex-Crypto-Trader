@@ -45,8 +45,8 @@ def frame_to_dataset(df: pl.DataFrame, *, provenance: DataProvenance, survivorsh
     ts_all = _to_epoch_seconds(df["timestamp"])
     df = df.with_columns(pl.Series("_ts", ts_all)).drop_nulls(["_ts", "open", "high", "low", "close", "volume"])
     df = df.unique(subset=["_ts", "symbol"], keep="last", maintain_order=False)
-    if (df["_ts"] % bar_seconds != 0).any():
-        raise ValueError(f"timestamps are not aligned to bar_seconds={bar_seconds}")
+    if ((df["_ts"] - df["_ts"].min()) % bar_seconds != 0).any():
+        raise ValueError(f"timestamps are not aligned to a common bar_seconds grid={bar_seconds}")
     ts = np.arange(df["_ts"].min(), df["_ts"].max() + bar_seconds, bar_seconds, dtype=np.int64)
     T = len(ts)
     symbols = sorted(df["symbol"].unique().to_list())

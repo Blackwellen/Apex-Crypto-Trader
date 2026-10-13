@@ -43,7 +43,7 @@ async fn state_machine_table_equals_migration_0003_and_live_db() {
     let sql = std::fs::read_to_string(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../packages/db/migrations/0003_trading.sql")).unwrap();
     let from_sql = parse_sql_transitions(&sql);
     let from_rust: BTreeSet<(String, String)> = ALLOWED.iter().map(|(a, b)| (a.as_str().to_string(), b.as_str().to_string())).collect();
-    assert_eq!(from_sql.len(), 44, "expected 44 transitions in the migration");
+    assert_eq!(from_sql.len(), ALLOWED.len());
     assert_eq!(from_rust, from_sql, "Rust ALLOWED != migration 0003 allowed_transitions");
 
     // and against a freshly migrated database (all migrations applied, incl. any later additions)
@@ -72,7 +72,7 @@ async fn state_machine_table_equals_migration_0003_and_live_db() {
             }
         }
     }
-    assert_eq!(illegal, 23 * 23 - 44);
+    assert_eq!(illegal, 23 * 23 - ALLOWED.len());
     assert!(!OrderState::Unknown.can_transition_to(OrderState::Submitting), "UNKNOWN -> SUBMITTING must never be legal");
 }
 

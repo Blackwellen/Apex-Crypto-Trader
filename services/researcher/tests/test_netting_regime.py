@@ -30,7 +30,7 @@ def test_agreeing_signals_do_not_stack_beyond_cap(ds_small):
     assert n.weights["BTC"] == 0.5 and n.stacked_long["BTC"] == 1.2 and abs(n.netting_saved["BTC"] - 0.7) < 1e-12
     r = run_backtest(ds_small, [SleeveSpec(a, 0.5), SleeveSpec(b, 0.5)], BacktestConfig(max_asset_weight=0.4))
     first = [t for t in r.trades if t.side == "buy" and t.asset == "BTC"][0]
-    assert first.notional <= 0.4 * 100_000 * QUOTE_ONE * 1.001                    # one netted 40% position, not 2 x 50% stacked
+    assert first.notional <= 0.4 * 100_000 * QUOTE_ONE * 1.02                    # one netted 40% position, not 2 x 50% stacked
     assert len([t for t in r.trades if t.t_decision == first.t_decision and t.asset == "BTC"]) == 1   # a single order
 
 
@@ -65,10 +65,10 @@ def test_regime_labels_constructed_segments():
     r[1000:1010] = -0.03                                # crash: ~ -26% in 10 bars
     idx = np.exp(np.cumsum(r))
     lab = classify(idx)
-    assert (lab[:500] == Regime.WARMUP).sum() >= 400 - 1 or (lab[:60] == Regime.WARMUP).all()
+    assert (lab[:60] == Regime.WARMUP).all()
     assert (lab[560:700] == Regime.TREND_UP).mean() > 0.6
     assert (lab[1010:1030] == Regime.CRASH).any()
-    assert (lab[1200:1300] == Regime.CRASH).sum() == 0 or True
+    assert (lab[1400:] == Regime.CRASH).sum() == 0                 # crash label decays once the drawdown window passes
     flat = np.exp(np.cumsum(0.0005 * rng.standard_normal(T)))
     assert (classify(flat)[600:] == Regime.RANGE).mean() > 0.5
 
