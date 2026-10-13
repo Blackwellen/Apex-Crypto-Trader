@@ -3,6 +3,8 @@ import { createWorkspaceIfNeeded, login } from './helpers';
 import { seedReferenceData, sweep, USDC } from './markets-helpers';
 
 test.beforeAll(() => seedReferenceData());
+const mine = (page: import('@playwright/test').Page) => page.locator(`a[href$="${USDC}"]`);
+const myRow = (page: import('@playwright/test').Page) => page.getByRole('row').filter({ has: mine(page) });
 
 test('markets: honest no-feed state, search by symbol/chain/contract/pair, tabs, watchlist + saved views persist across reload', async ({ page }) => {
   test.setTimeout(120_000);
@@ -11,19 +13,19 @@ test('markets: honest no-feed state, search by symbol/chain/contract/pair, tabs,
   await expect(page.getByTestId('no-feed')).toContainText('No market data feed connected');
   await expect(page.getByTestId('no-feed')).toContainText('Coinbase');
   const search = page.getByLabel(/Search symbol, chain, contract/);
-  await search.fill('usdc'); await expect(page.getByRole('link', { name: 'USDC' })).toBeVisible(); await expect(page.getByRole('link', { name: 'BTC' })).toHaveCount(0);
-  await search.fill('ETH/USDC'); await expect(page.getByRole('link', { name: 'ETH', exact: true })).toBeVisible();
-  await search.fill('0xa0b86991'); await expect(page.getByRole('link', { name: 'USDC' })).toBeVisible();
+  await search.fill('usdc'); await expect(mine(page)).toBeVisible(); await expect(page.getByRole('link', { name: 'BTC' })).toHaveCount(0);
+  await search.fill('ETH/USDC'); await expect(page.locator('a[href$="/native"]').first()).toBeVisible();
+  await search.fill('0xa0b86991'); await expect(mine(page)).toBeVisible();
   await search.fill('solana'); await expect(page.getByText('No tokens match these filters')).toBeVisible();
   await search.fill('');
-  await page.getByRole('tab', { name: 'CEX' }).click(); await expect(page.getByRole('link', { name: 'BTC' })).toBeVisible(); await expect(page.getByRole('link', { name: 'USDC' })).toHaveCount(0);
+  await page.getByRole('tab', { name: 'CEX' }).click(); await expect(page.getByRole('link', { name: 'BTC' })).toBeVisible(); await expect(mine(page)).toHaveCount(0);
   await page.getByRole('tab', { name: 'All assets' }).click();
 
   // watchlist persists
-  await page.getByRole('button', { name: 'Add USDC to watchlist' }).click();
-  await expect(page.getByRole('button', { name: 'Remove USDC from watchlist' })).toBeVisible();
+  await myRow(page).getByRole('button', { name: 'Add USDC to watchlist' }).click();
+  await expect(myRow(page).getByRole('button', { name: 'Remove USDC from watchlist' })).toBeVisible();
   await page.reload(); await page.getByRole('tab', { name: 'Watchlist' }).click();
-  await expect(page.getByRole('link', { name: 'USDC' })).toBeVisible(); await expect(page.getByRole('link', { name: 'BTC' })).toHaveCount(0);
+  await expect(mine(page)).toBeVisible(); await expect(page.getByRole('link', { name: 'BTC' })).toHaveCount(0);
 
   // saved view persists server-side
   await page.getByRole('tab', { name: 'All assets' }).click(); await search.fill('usd');

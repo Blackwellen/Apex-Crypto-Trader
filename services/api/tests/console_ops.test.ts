@@ -7,7 +7,9 @@ import { buildApp } from '../src/app.ts';
 import { loadConfig } from '../src/config.ts';
 import { makePool } from '../src/db.ts';
 import { signDevToken } from '../src/auth.ts';
-import { previewWaterfall } from '../../../apps/console/lib/waterfall.ts';
+// console libs are loaded dynamically (they are plain TS shared with the browser; keeps this package's tsc scope clean)
+const lib = (n: string): Promise<any> => import(new URL(`../../../apps/console/lib/${n}.ts`, import.meta.url).href);
+const { previewWaterfall } = await lib('waterfall');
 
 const secret = 'test-secret-test-secret-test-secret-123456';
 let db: any, app: Awaited<ReturnType<typeof buildApp>>, pool: any;
@@ -56,7 +58,7 @@ test('auth + cross-tenant: every new read is 401 unauthenticated and invisible/4
   const acc = (await call('GET', `/v1/capital/accounts?workspace=${W.ws}`, 'other')).json(); assert.deepEqual(acc.buckets, []); assert.deepEqual(acc.accounts, []);
   assert.equal((await call('GET', `/v1/risk/violations?workspace=${W.ws}`, 'other')).statusCode, 404);
   assert.equal((await call('GET', `/v1/settings/members?workspace=${W.ws}`, 'other')).statusCode, 403);
-  for (const [n, b] of [['pauseNonEssentialJobs', { workspace: W.ws, reason: 'attack' }], ['recordIncident', { workspace: W.ws, class: 'x', severity: 'info', message: 'abc' }], ['tightenGlobalLimits', { workspace: W.ws, limits: { max_slippage_bps: 1 }, reason: 'abc' }],
+  for (const [n, b] of [['pauseNonEssentialJobs', { workspace: W.ws, reason: 'attack' }], ['recordIncident', { workspace: W.ws, class: 'xx', severity: 'info', message: 'abc' }], ['tightenGlobalLimits', { workspace: W.ws, limits: { max_slippage_bps: 1 }, reason: 'abc' }],
     ['setCompoundingTarget', { workspace: W.ws, period: 'day', asset: USDC, targetAmount: '1' }], ['addReconciliationException', { workspace: W.ws, asset: USDC, expected: '1', observed: '2', source: 's' }]] as const)
     assert.equal((await cmd(n, 'other', b)).statusCode, 403, n);
 });
@@ -128,7 +130,7 @@ test('same-wallet transfer is LOGICAL and atomic (preview rule == SQL rule)', as
   await cmd('paperDeposit', 'owner', { workspace: W.ws, walletChainAccount: x, asset: USDC, amount: '500' }); await cmd('allocate', 'owner', { workspace: W.ws, bucket: L1, walletChainAccount: x, asset: USDC, amount: '500' });
   const r = await cmd('requestCapitalTransfer', 'owner', { workspace: W.ws, srcBucket: L1, srcWalletChainAccount: x, dstBucket: L2, dstWalletChainAccount: x, asset: USDC, amount: '200' }); assert.equal(r.statusCode, 200, r.body);
   const tr = (await get(`/v1/allocations?workspace=${W.ws}`)).transfers.find((t: any) => t.id === r.json().result.id);
-  const { transferKind, initialStatus } = await import('../../../apps/console/lib/transfer.ts');
+  const { transferKind, initialStatus } = await lib('transfer');
   assert.equal(tr.kind, transferKind(x, x)); assert.equal(tr.status, initialStatus('logical')); assert.equal(tr.status, 'confirmed');
   const acc = await get(`/v1/capital/accounts?workspace=${W.ws}`); assert.equal(acc.balances.find((b: any) => b.bucket_id === L2 && b.state === 'available').amount, '200');
   assert.equal(transferKind(W.xw1, W.xw2), (await get(`/v1/allocations?workspace=${W.ws}`)).transfers.find((t: any) => t.kind === 'physical').kind);
@@ -221,7 +223,7 @@ test('global limits: tighten-only; loosening needs a second owner + delay; appli
 });
 
 test('scoped emergency: trader may halt a bucket, only admin+ resumes; halted bucket refuses reservations', async () => {
-  assert.equal((await cmd('setBucketState', 'viewer', { bucket: W.B, state: 'halt_new_entries', reason: 'no' })).statusCode, 403);
+  assert.equal((await cmd('setBucketState', 'viewer', { bucket: W.B, state: 'halt_new_entries', reason: 'nope' })).statusCode, 403);
   assert.equal((await cmd('setBucketState', 'trader', { bucket: W.B, state: 'exit_only', reason: 'drill' })).statusCode, 200);
   assert.equal((await sqlOne(`select state from buckets where id=$1`, [W.B])).state, 'exit_only');
   assert.ok((await get(`/v1/risk/violations?workspace=${W.ws}`)).items.some((x: any) => x.key === 'bucket_state:' + W.B));

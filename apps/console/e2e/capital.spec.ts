@@ -243,7 +243,7 @@ test('policy editor: diff before save, hard-limit refusal, stale-version (409) i
   await slip.fill('60');
   await cmdOk(page, 'updateBucketPolicy', { bucket: p.TR, expectedVersion: 1, policy: { max_slippage_bps: 70, max_open_orders: 3 } });
   await page.getByRole('button', { name: 'Review changes' }).click();
-  await expect(page.getByRole('cell', { name: 'max_slippage_bps' })).toBeVisible();
+  await expect(page.getByRole('rowheader', { name: 'max_slippage_bps' })).toBeVisible();
   await page.getByRole('button', { name: /Confirm and save \(expects v1\)/ }).click();
   await expect(page.getByRole('alert').filter({ hasText: 'Save refused' })).toBeVisible();
   await expect(page.getByText(/You edited version 1; the current version is 2/)).toBeVisible();
@@ -315,10 +315,10 @@ test('baskets: weights must total exactly 100% (save blocked), preview is units-
   await page.getByRole('button', { name: 'New basket' }).first().click();
   const d = dlg(page, 'New basket'); const save = d.getByRole('button', { name: 'Save basket' });
   await d.getByLabel('Bucket').selectOption({ label: 'Trading (paper)' }); await d.getByLabel('Basket name').fill('Stable core');
-  await d.getByLabel('Asset 1').selectOption({ label: 'USDC · eip155:1' }); await d.getByLabel('Weight %').first().fill('60');
+  await d.getByLabel('Asset 1', { exact: true }).selectOption({ label: 'USDC · eip155:1' }); await d.getByLabel('Weight %').first().fill('60');
   await expect(d.getByText('Total 60.00% of 100.00%')).toBeVisible(); await expect(d.getByText('40.00% still unallocated')).toBeVisible(); await expect(save).toBeDisabled();
   await d.getByRole('button', { name: 'Add asset' }).click();
-  await d.getByLabel('Asset 2').selectOption({ label: 'DAI · eip155:1' }); await d.getByLabel('Weight %').nth(1).fill('45');
+  await d.getByLabel('Asset 2', { exact: true }).selectOption({ label: 'DAI · eip155:1' }); await d.getByLabel('Weight %').nth(1).fill('45');
   await expect(d.getByText('5.00% over 100%')).toBeVisible(); await expect(save).toBeDisabled();
   await d.getByLabel('Weight %').nth(1).fill('40'); await expect(save).toBeEnabled();
   await save.click(); await expect(page.getByText('Basket "Stable core" created')).toBeVisible();

@@ -23,3 +23,8 @@ Maintained alongside `docs/IMPLEMENTATION_LOG.md`. P0 = blocks any live authoris
 ## P2
 - Browser QA used Chromium only (no Firefox/WebKit); screen-reader testing is automated-axe only, no manual NVDA/VoiceOver pass.
 - Load/soak/chaos tests limited to DB/API concurrency tests.
+
+## Added after Rust engine review
+- P1: `reserve_capital` (0002) refuses reservations in a non-active bucket, so a risk-reducing exit from a bucket-level halt is blocked in SQL (workspace-wide halts allow covered sells via the 0140 `advance_intent` override). Needs a deliberate change to 0002 plus tests.
+- P1: Rust risk gate loads only global + bucket policy layers; portfolio/wallet/basket/strategy/order layers have no tables yet.
+- P1: post-trade states beyond FILLED and APPROVAL_WAIT are not driven by the dispatcher (paper pipeline integration in progress).
