@@ -23,3 +23,4 @@ Every row is produced by scripts/evidence.sh from a real run; logs are stored un
 | 2026-10-13T19:52:02Z | db: full suite incl. all migrations | **FAIL** | bd5fe10 | 81 | `pnpm --filter @apex/db test` | docs/evidence/runs/20261013T195202Z-db__full_suite_incl__all_migrations.log |
 | 2026-10-13T19:52:33Z | db: full suite incl. all migrations | **PASS** | 754197b | 1 | `pnpm --filter @apex/db test` | docs/evidence/runs/20261013T195234Z-db__full_suite_incl__all_migrations.log |
 | 2026-10-13T19:52:59Z | db: full suite incl. all migrations | **PASS** | 754197b | 8 | `pnpm --filter @apex/db test` | docs/evidence/runs/20261013T195259Z-db__full_suite_incl__all_migrations.log |
+| 2026-10-13T19:56:54Z | rust: cargo test --workspace | **PASS** | 137f862 | 35 | `cargo test --workspace` | docs/evidence/runs/20261013T195654Z-rust__cargo_test___workspace.log |

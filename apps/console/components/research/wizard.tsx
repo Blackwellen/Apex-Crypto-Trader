@@ -60,11 +60,11 @@ export function BacktestWizard() {
           <fieldset><legend className="mb-2 text-[12px] font-semibold text-[#44546a]">Strategy sleeves (capital share of the simulated account)</legend>
             {!h?.strategies?.length && <p className="text-[13px] text-muted">{reachable ? 'The researcher reported no strategies.' : 'Strategy list unavailable while the researcher is not reachable.'}</p>}
             <div className="space-y-2">{rows.map((r, i) => (
-              <div key={r.name} className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2 rounded-xl border border-line p-3 sm:grid-cols-[auto_1fr_110px_130px]">
+              <div key={r.name} className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-line p-3">
                 <input type="checkbox" aria-label={`Include ${r.name}`} checked={r.on} onChange={(e) => setSleeves(rows.map((x, j) => (j === i ? { ...x, on: e.target.checked } : x)))} className="size-5 accent-[#2758da]" />
-                <span className="font-mono text-[13px]">{r.name}</span>
-                <label className="text-[12px] text-muted">Allocation %<input aria-label={`${r.name} allocation percent`} type="number" min={0} max={100} step={1} disabled={!r.on} value={r.pct} onChange={(e) => setSleeves(rows.map((x, j) => (j === i ? { ...x, pct: e.target.value } : x)))} className="mt-1 min-h-10 w-full rounded-xl border border-line px-3 text-[14px] text-ink disabled:bg-[#f3f5f9]" /></label>
-                <label className="text-[12px] text-muted">Stage<select aria-label={`${r.name} stage`} disabled={!r.on} value={r.stage} onChange={(e) => setSleeves(rows.map((x, j) => (j === i ? { ...x, stage: e.target.value as 'research' | 'paper' } : x)))} className="mt-1 min-h-10 w-full rounded-xl border border-line bg-white px-3 text-[14px] text-ink disabled:bg-[#f3f5f9]"><option>research</option><option>paper</option></select></label>
+                <span className="min-w-[10rem] flex-1 break-all font-mono text-[13px]">{r.name}</span>
+                <label className="w-28 text-[12px] text-muted">Allocation %<input aria-label={`${r.name} allocation percent`} type="number" min={0} max={100} step={1} disabled={!r.on} value={r.pct} onChange={(e) => setSleeves(rows.map((x, j) => (j === i ? { ...x, pct: e.target.value } : x)))} className="mt-1 min-h-10 w-full rounded-xl border border-line px-3 text-[14px] text-ink disabled:bg-[#f3f5f9]" /></label>
+                <label className="w-32 text-[12px] text-muted">Stage<select aria-label={`${r.name} stage`} disabled={!r.on} value={r.stage} onChange={(e) => setSleeves(rows.map((x, j) => (j === i ? { ...x, stage: e.target.value as 'research' | 'paper' } : x)))} className="mt-1 min-h-10 w-full rounded-xl border border-line bg-white px-3 text-[14px] text-ink disabled:bg-[#f3f5f9]"><option>research</option><option>paper</option></select></label>
               </div>))}</div>
             <p className="mt-2 text-[12px] text-muted" aria-live="polite">Total allocated: <strong>{total}%</strong> (the remainder stays in cash).</p>
           </fieldset>

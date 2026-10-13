@@ -14,27 +14,27 @@ export const tradingRoutes: RouteModule = async (ctx: RouteCtx) => {
 
   app.get('/v1/orders/board', async (req) => { const { workspace, limit, offset } = q((ws as any).merge(page), req) as { workspace: string; limit: number; offset: number }; return read(req, async (c) => ({ items: (await c.query(
     `select i.id, i.environment, i.bucket_id, b.name bucket, i.strategy_key, i.side, i.state, i.venue, i.quantity::text quantity, i.notional::text notional, i.limit_price::text limit_price, i.created_at, i.updated_at,
-            ab.symbol base_symbol, ab.decimals base_decimals, aq.symbol quote_symbol, aq.decimals quote_decimals, x.chain_id, i.reservation_id is not null reserved,
+            ab.symbol base_symbol, ab.decimals base_decimals, aq.symbol quote_symbol, aq.decimals quote_decimals, x.chain_id, cr.native_symbol, cr.native_decimals, i.reservation_id is not null reserved,
             coalesce((select sum(f.qty) from fills f where f.intent_id=i.id),0)::text filled_qty, (select count(*) from fills f where f.intent_id=i.id)::int fill_count,
             (select avg(f.expected_slippage_bps)::float8 from fills f where f.intent_id=i.id) expected_slippage_bps, (select avg(f.realised_slippage_bps)::float8 from fills f where f.intent_id=i.id) realised_slippage_bps,
             (select sum(f.gas_native)::text from fills f where f.intent_id=i.id) gas_native,
             (select r.decision from risk_decisions r where r.intent_id=i.id order by r.created_at desc limit 1) risk_decision,
             (select jsonb_agg(jsonb_build_object('from', e.from_state, 'to', e.to_state, 'at', e.created_at, 'detail', e.detail) order by e.id) from order_events e where e.intent_id=i.id) timeline
-       from trade_intents i join buckets b on b.id=i.bucket_id join assets ab on ab.id=i.base_asset join assets aq on aq.id=i.quote_asset join wallet_chain_accounts x on x.id=i.wallet_chain_account_id
+       from trade_intents i join buckets b on b.id=i.bucket_id join assets ab on ab.id=i.base_asset join assets aq on aq.id=i.quote_asset join wallet_chain_accounts x on x.id=i.wallet_chain_account_id join chain_registry cr on cr.id=x.chain_id
       where i.workspace_id=$1 order by i.created_at desc limit $2 offset $3`, [workspace, limit, offset])).rows })); });
 
   app.get('/v1/trades/board', async (req) => { const { workspace, limit, offset } = q((ws as any).merge(page), req) as { workspace: string; limit: number; offset: number }; return read(req, async (c) => ({ items: (await c.query(
     `select f.id, f.intent_id, f.environment, f.venue_fill_id, f.qty::text qty, f.quote_amount::text quote_amount, f.fee_quote::text fee_quote, f.created_at,
             f.expected_slippage_bps, f.realised_slippage_bps, f.gas_native::text gas_native, f.priority_fee_native::text priority_fee_native,
-            i.strategy_key, i.side, i.venue, ab.symbol base_symbol, ab.decimals base_decimals, aq.symbol quote_symbol, aq.decimals quote_decimals, x.chain_id
-       from fills f join trade_intents i on i.id=f.intent_id join assets ab on ab.id=i.base_asset join assets aq on aq.id=i.quote_asset join wallet_chain_accounts x on x.id=i.wallet_chain_account_id
+            i.strategy_key, i.side, i.venue, ab.symbol base_symbol, ab.decimals base_decimals, aq.symbol quote_symbol, aq.decimals quote_decimals, x.chain_id, cr.native_symbol, cr.native_decimals
+       from fills f join trade_intents i on i.id=f.intent_id join assets ab on ab.id=i.base_asset join assets aq on aq.id=i.quote_asset join wallet_chain_accounts x on x.id=i.wallet_chain_account_id join chain_registry cr on cr.id=x.chain_id
       where f.workspace_id=$1 order by f.created_at desc limit $2 offset $3`, [workspace, limit, offset])).rows })); });
 
   app.get('/v1/orders/:id', async (req) => { const { id } = z.object({ id: uuid }).parse(req.params); return read(req, async (c) => {
     const i = (await c.query(
-      `select i.*, i.quantity::text quantity_s, i.notional::text notional_s, ab.symbol base_symbol, ab.decimals base_decimals, aq.symbol quote_symbol, aq.decimals quote_decimals, x.chain_id, w.nickname wallet, w.capability wallet_capability, b.name bucket
+      `select i.*, i.quantity::text quantity_s, i.notional::text notional_s, ab.symbol base_symbol, ab.decimals base_decimals, aq.symbol quote_symbol, aq.decimals quote_decimals, x.chain_id, cr.native_symbol, cr.native_decimals, w.nickname wallet, w.capability wallet_capability, b.name bucket
          from trade_intents i join buckets b on b.id=i.bucket_id join assets ab on ab.id=i.base_asset join assets aq on aq.id=i.quote_asset
-         join wallet_chain_accounts x on x.id=i.wallet_chain_account_id join wallets w on w.id=x.wallet_id where i.id=$1`, [id])).rows[0];
+         join wallet_chain_accounts x on x.id=i.wallet_chain_account_id join chain_registry cr on cr.id=x.chain_id join wallets w on w.id=x.wallet_id where i.id=$1`, [id])).rows[0];
     if (!i) throw Object.assign(new Error('not found'), { statusCode: 404, code: 'not_found' });
     const events = (await c.query(`select id, event_key, from_state, to_state, detail, created_at from order_events where intent_id=$1 order by id`, [id])).rows;
     const fills = (await c.query(`select id, venue_fill_id, qty::text qty, quote_amount::text quote_amount, fee_quote::text fee_quote, expected_slippage_bps, realised_slippage_bps, gas_native::text gas_native, created_at from fills where intent_id=$1 order by created_at`, [id])).rows;

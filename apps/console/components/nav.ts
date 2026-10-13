@@ -1,4 +1,4 @@
-import { Activity, BarChart3, Boxes, Coins, Compass, FlaskConical, Gauge, GitBranch, Layers, LineChart, Newspaper, Radar, Settings, ShieldAlert, Wallet, Wrench, Zap, type LucideIcon } from 'lucide-react';
+import { Activity, ArrowLeftRight, BarChart3, Boxes, Coins, Compass, FlaskConical, Gauge, GitBranch, Layers, LineChart, Newspaper, Radar, Settings, ShieldAlert, Wallet, Wrench, Zap, type LucideIcon } from 'lucide-react';
 export interface NavItem { href: string; label: string; icon: LucideIcon; group: string }
 export const NAV: NavItem[] = [
   { href: '/dashboard', label: 'Command', icon: Gauge, group: 'Command' },
@@ -8,6 +8,7 @@ export const NAV: NavItem[] = [
   { href: '/strategies', label: 'Strategies', icon: Compass, group: 'Trading' },
   { href: '/trading', label: 'Live Orders', icon: Activity, group: 'Trading' },
   { href: '/execution', label: 'Execution', icon: Zap, group: 'Trading' },
+  { href: '/arbitrage', label: 'Arbitrage', icon: ArrowLeftRight, group: 'Trading' },
   { href: '/portfolios', label: 'Portfolios', icon: Layers, group: 'Capital' },
   { href: '/buckets', label: 'Buckets', icon: Boxes, group: 'Capital' },
   { href: '/wallets', label: 'Wallets', icon: Wallet, group: 'Capital' },

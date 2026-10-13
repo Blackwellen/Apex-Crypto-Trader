@@ -10,7 +10,7 @@ import { useWorkspace } from '@/lib/workspace';
 import { ALL_CAPABILITIES, healthLabel, readiness, type CapMap } from '@/lib/chains';
 import { HealthBadge, ReadinessBadges, ms, amt, Note, type Health } from '@/components/trading/parts';
 
-interface Chain { id: string; family: string; name: string; is_testnet: boolean; native_symbol: string; native_decimals: number; finality_model: string; address_format: string; capabilities: CapMap; enabled: boolean; policy_reason: string | null;
+interface Chain { id: string; family: string; name: string; is_testnet: boolean; native_symbol: string; native_decimals: number; finality_model: string; address_format: string; capabilities: CapMap; enabled: boolean; policy_reason: string | null; registry_unverified: boolean; unverified_fields: string[];
   health: Health; walletCount: number; enabledStrategies: number; exposure: { environment: string; symbol: string; decimals: number; state: string; amount: string }[] }
 
 function CapSummary({ caps }: { caps: CapMap }) {
@@ -56,7 +56,7 @@ function ChainCard({ c }: { c: Chain }) {
       <header className="flex items-start justify-between gap-3">
         <div><h2 className="text-[16px] font-semibold tracking-tight"><Link className="hover:underline" href={`/chains/${encodeURIComponent(c.id)}`}>{c.name}</Link></h2>
           <p className="text-[12px] text-muted">{c.id}</p></div>
-        <div className="flex flex-wrap justify-end gap-1.5"><Badge>{c.family}</Badge>{c.is_testnet && <Badge tone="warn">testnet</Badge>}<Badge tone={c.enabled ? 'accent' : 'neutral'}>{c.enabled ? 'Monitoring on' : 'Disabled'}</Badge></div>
+        <div className="flex flex-wrap justify-end gap-1.5"><Badge>{c.family}</Badge>{c.is_testnet && <Badge tone="warn">testnet</Badge>}<Badge tone={c.enabled ? 'accent' : 'neutral'}>{c.enabled ? 'Monitoring on' : 'Disabled'}</Badge>{c.registry_unverified && <Badge tone="warn" title={`Registry fields not yet verified against primary sources: ${c.unverified_fields.join(', ') || 'unspecified'}`}>Unverified record</Badge>}</div>
       </header>
       <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-[13px]">
         <div><dt className="text-[11px] font-semibold uppercase tracking-wider text-muted">Native asset</dt><dd>{c.native_symbol} · {c.native_decimals} dp</dd></div>

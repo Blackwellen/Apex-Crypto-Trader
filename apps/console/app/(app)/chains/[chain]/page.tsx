@@ -12,7 +12,7 @@ import { CapBadge, EnvBadge, HealthBadge, NotConnectedCard, Note, ReadinessBadge
 
 const TABS = ['Nodes', 'Providers', 'Fees', 'Wallets', 'Markets', 'Transactions', 'Incidents', 'Adapters'].map((t) => ({ id: t.toLowerCase(), label: t }));
 interface Detail {
-  chain: { id: string; family: string; name: string; namespace: string; chain_ref: string; is_testnet: boolean; native_symbol: string; native_decimals: number; finality_model: string; address_format: string; explorer_url: string | null; enabled: boolean; policy_reason: string | null; capabilities: CapMap };
+  chain: { id: string; family: string; name: string; namespace: string; chain_ref: string; is_testnet: boolean; native_symbol: string; native_decimals: number; finality_model: string; address_format: string; explorer_url: string | null; enabled: boolean; policy_reason: string | null; registry_unverified: boolean; unverified_fields: string[]; capabilities: CapMap };
   health: Health; candidates: string[]; probes: { configured: boolean };
   history: { endpoint: string; observed_at: string; ok: boolean; latency_ms: number | null; chain_id_match: boolean | null; block_height: string | null; error: string | null }[];
   providers: { endpoint: string; samples: number; ok_samples: number; p50: number | null; last_seen: string }[];
@@ -133,6 +133,7 @@ function Body({ id }: { id: string }) {
           <Kpi label="Capabilities" value={`${r.counts.CERTIFIED} certified`} sub={`${r.counts.READ_ONLY} read-only · ${r.counts.PENDING} pending · ${r.counts.UNSUPPORTED} unsupported · ${r.counts.UNRECORDED} unrecorded`} />
           <Kpi label="Readiness" value={<ReadinessBadges caps={d.chain.capabilities} />} sub={r.trading === 'certified' ? 'Deployment gates still apply' : `Missing CERTIFIED: ${r.missingForTrading.join(', ')}`} tone="warn" />
         </div>
+        {d.chain.registry_unverified && <div className="mb-4"><Note tone="warn">This registry record has fields not yet verified against primary sources: <strong>{d.chain.unverified_fields.join(', ') || 'unspecified'}</strong>. Treat them as unconfirmed.</Note></div>}
         {d.chain.explorer_url && <p className="mb-4 text-[13px] text-muted">Explorer: <a className="font-semibold text-accent underline" href={d.chain.explorer_url} target="_blank" rel="noopener noreferrer">{d.chain.explorer_url}</a></p>}
         <Card><Tabs tabs={TABS} value={tab} onChange={pick} />
           <TabPanel id="nodes" value={tab}><Nodes d={d} /></TabPanel><TabPanel id="providers" value={tab}><Providers d={d} /></TabPanel><TabPanel id="fees" value={tab}><Fees d={d} /></TabPanel>

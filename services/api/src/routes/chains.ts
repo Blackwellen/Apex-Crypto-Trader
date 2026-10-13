@@ -28,6 +28,7 @@ export const chainsRoutes: RouteModule = async (ctx: RouteCtx) => {
     const reg = (await c.query(
       `select r.id, r.namespace, r.chain_ref, r.family, r.name, r.is_testnet, r.native_symbol, r.native_decimals, r.finality_model, r.address_format, r.explorer_url, r.enabled registry_enabled,
               (r.details is not null and jsonb_typeof(coalesce(r.details->'rpcCandidates', r.details->'rpc_candidates', r.details->'rpc', r.details->'rpcUrls')) = 'array') has_rpc_candidates,
+              coalesce((r.details->>'unverified')::boolean, false) registry_unverified, coalesce(r.details->'unverifiedFields', '[]'::jsonb) unverified_fields,
               p.enabled policy_enabled, p.reason policy_reason, p.updated_at policy_updated_at,
               coalesce((select jsonb_object_agg(k.capability, jsonb_build_object('status', k.status, 'evidence', k.evidence_ref, 'updated_at', k.updated_at)) from chain_capabilities k where k.chain_id=r.id), '{}') capabilities
          from chain_registry r left join workspace_chain_policy p on p.chain_id=r.id and p.workspace_id=$1 order by r.family, r.name`, [workspace])).rows;
@@ -51,7 +52,7 @@ export const chainsRoutes: RouteModule = async (ctx: RouteCtx) => {
 
   app.get('/v1/chains/:id/detail', async (req) => { const { id } = z.object({ id: chainId }).parse(req.params); const { workspace } = q(ws, req); return read(req, async (c) => {
     const r = (await c.query(
-      `select r.*, p.enabled policy_enabled, p.reason policy_reason, p.updated_at policy_updated_at,
+      `select r.*, coalesce((r.details->>'unverified')::boolean, false) registry_unverified, coalesce(r.details->'unverifiedFields', '[]'::jsonb) unverified_fields, p.enabled policy_enabled, p.reason policy_reason, p.updated_at policy_updated_at,
               coalesce((select jsonb_object_agg(k.capability, jsonb_build_object('status', k.status, 'evidence', k.evidence_ref, 'updated_at', k.updated_at)) from chain_capabilities k where k.chain_id=r.id), '{}') capabilities
          from chain_registry r left join workspace_chain_policy p on p.chain_id=r.id and p.workspace_id=$2 where r.id=$1`, [id, workspace])).rows[0];
     if (!r) throw notFound();

@@ -15,7 +15,7 @@ export function MethodStatements({ report }: { report: any }) {
   const s = report?.survivorship, n = report?.no_lookahead;
   const biased = s?.includes_delisted === false;
   return (
-    <div className="grid gap-4 md:grid-cols-2" data-testid="method-statements">
+    <div className="grid gap-4 md:grid-cols-2" data-testid="method-statements" style={{ overflowWrap: 'anywhere' }}>
       <section aria-label="Survivorship bias" className={`rounded-2xl border p-4 text-[13px] ${biased ? 'border-[#f3c9c5] bg-bad-soft text-bad' : 'border-line bg-card'}`}>
         <h3 className="mb-1 text-[13px] font-bold uppercase tracking-wider">Survivorship bias</h3>
         {s ? <><p>{s.interpretation}</p><p className="mt-1 text-muted">Delisted/rugged assets declared included: <strong>{String(s.includes_delisted)}</strong> · present in this sample: <strong>{s.delisted_assets_in_dataset}</strong> · flag: <code>{s.bias_flag}</code></p><p className="mt-1 text-muted">{s.note}</p></>
@@ -77,9 +77,9 @@ export function CostsCard({ report }: { report: any }) {
   const c = report?.costs, m = report?.cost_model;
   return (
     <Card title="Cost model and costs paid">
-      {m ? <dl className="grid gap-x-6 gap-y-2 text-[13px] sm:grid-cols-3">{Object.entries(m).map(([k, v]) => <div key={k}><dt className="font-mono text-[11px] text-muted">{k}</dt><dd className="tabular">{String(v)}</dd></div>)}</dl> : <p className="text-[13px] text-muted">No cost model returned.</p>}
+      {m ? <dl style={{ overflowWrap: 'anywhere' }} className="grid gap-x-6 gap-y-2 text-[13px] sm:grid-cols-3">{Object.entries(m).map(([k, v]) => <div key={k}><dt className="font-mono text-[11px] text-muted">{k}</dt><dd className="tabular">{String(v)}</dd></div>)}</dl> : <p className="text-[13px] text-muted">No cost model returned.</p>}
       {c && <><h3 className="mb-1 mt-4 text-[12px] font-bold uppercase tracking-wider text-muted">Paid in simulation (integer quote micro-units)</h3>
-        <dl className="grid gap-x-6 gap-y-2 text-[13px] sm:grid-cols-3">{Object.entries(c).map(([k, v]) => <div key={k}><dt className="font-mono text-[11px] text-muted">{k}</dt><dd className="tabular">{String(v)}</dd></div>)}</dl></>}
+        <dl style={{ overflowWrap: 'anywhere' }} className="grid gap-x-6 gap-y-2 text-[13px] sm:grid-cols-3">{Object.entries(c).map(([k, v]) => <div key={k}><dt className="font-mono text-[11px] text-muted">{k}</dt><dd className="tabular">{String(v)}</dd></div>)}</dl></>}
     </Card>
   );
 }

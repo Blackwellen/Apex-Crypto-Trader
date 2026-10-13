@@ -109,7 +109,7 @@ export const consoleOpsRoutes: RouteModule = ({ app, cfg, read, cmd, one, q, sch
     const w = (await c.query(`select w.id, w.name, w.base_currency, w.created_at, w.schema_version from workspaces w where w.id=$1`, [workspace])).rows[0];
     if (!w) throw Object.assign(new Error('workspace not found'), { statusCode: 404, code: 'not_found' });
     const s = (await c.query(`select global_state, global_limits, live_opt_in, live_feature_flag, paper_running, nonessential_jobs_paused, live_allowed(workspace_id) live_allowed from workspace_settings where workspace_id=$1`, [workspace])).rows[0];
-    const role = (await c.query(`select role from memberships where workspace_id=$1 and user_id=auth.uid()`, [workspace])).rows[0]?.role ?? null;
+    const role = (await c.query(`select role from api_list_members($1) where is_you`, [workspace])).rows[0]?.role ?? null;
     return { workspace: w, settings: s, yourRole: role, authMode: cfg.devAuth ? 'dev' : 'jwt', flags: [
       { key: 'live_feature_flag', value: s.live_feature_flag, source: 'workspace_settings.live_feature_flag', note: 'Operator flag: set by the platform operator, not by workspace users (no UI/API command exists).' },
       { key: 'live_opt_in', value: s.live_opt_in, source: 'workspace_settings.live_opt_in', note: 'Owner opt-in; changed in Risk Command.' },

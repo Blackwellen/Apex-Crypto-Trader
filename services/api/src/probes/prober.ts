@@ -60,7 +60,7 @@ export async function probeSvm(url: string, expectedGenesis: string | null, o: P
 
 export async function probeChain(chain: { family: string; chain_ref: string; details: unknown }, url: string, o: ProbeOpts = {}): Promise<ProbeResult | null> {
   if (chain.family === 'evm') return probeEvm(url, chain.chain_ref, o);
-  if (chain.family === 'svm') { const g = (chain.details as { genesisHash?: unknown } | null)?.genesisHash; return probeSvm(url, typeof g === 'string' ? g : null, o); }
+  if (chain.family === 'svm') { const dd = chain.details as { genesisHash?: unknown; meta?: { genesisHash?: unknown } } | null; const g = dd?.genesisHash ?? dd?.meta?.genesisHash; return probeSvm(url, typeof g === 'string' ? g : null, o); }
   return null;   // no prober for this family yet: stays NOT_MEASURED (documented limitation)
 }
 

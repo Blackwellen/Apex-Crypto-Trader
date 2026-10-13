@@ -1,0 +1,1493 @@
+[
+{
+"input": {
+"gross": "1",
+"deficit": "0",
+"tax": 0,
+"rv": 10000,
+"vt": 0,
+"cx": 0,
+"rs": 0,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "1",
+"tax": "0",
+"vault": "0",
+"cross": "0",
+"reserve": "0",
+"reinvest": "1"
+}
+},
+{
+"input": {
+"gross": "1",
+"deficit": "0",
+"tax": 0,
+"rv": 0,
+"vt": 10000,
+"cx": 0,
+"rs": 0,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "1",
+"tax": "0",
+"vault": "1",
+"cross": "0",
+"reserve": "0",
+"reinvest": "0"
+}
+},
+{
+"input": {
+"gross": "7",
+"deficit": "0",
+"tax": 0,
+"rv": 3333,
+"vt": 3333,
+"cx": 3334,
+"rs": 0,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "7",
+"tax": "0",
+"vault": "2",
+"cross": "2",
+"reserve": "0",
+"reinvest": "3"
+}
+},
+{
+"input": {
+"gross": "999999",
+"deficit": "0",
+"tax": 1000,
+"rv": 4000,
+"vt": 3500,
+"cx": 0,
+"rs": 2500,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "999999",
+"tax": "99999",
+"vault": "315000",
+"cross": "0",
+"reserve": "225000",
+"reinvest": "360000"
+}
+},
+{
+"input": {
+"gross": "1000000000000000000000000000007",
+"deficit": "0",
+"tax": 1234,
+"rv": 3333,
+"vt": 3333,
+"cx": 3334,
+"rs": 0,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "1000000000000000000000000000007",
+"tax": "123400000000000000000000000000",
+"vault": "292170780000000000000000000002",
+"cross": "292258440000000000000000000002",
+"reserve": "0",
+"reinvest": "292170780000000000000000000003"
+}
+},
+{
+"input": {
+"gross": "100",
+"deficit": "0",
+"tax": 10000,
+"rv": 0,
+"vt": 0,
+"cx": 0,
+"rs": 0,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "100",
+"tax": "100",
+"vault": "0",
+"cross": "0",
+"reserve": "0",
+"reinvest": "0"
+}
+},
+{
+"input": {
+"gross": "5",
+"deficit": "0",
+"tax": 3,
+"rv": 1,
+"vt": 1,
+"cx": 0,
+"rs": 9998,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "5",
+"tax": "0",
+"vault": "0",
+"cross": "0",
+"reserve": "4",
+"reinvest": "1"
+}
+},
+{
+"input": {
+"gross": "1000",
+"deficit": "300",
+"tax": 500,
+"rv": 4000,
+"vt": 3500,
+"cx": 0,
+"rs": 2500,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "300",
+"eligible": "700",
+"tax": "35",
+"vault": "232",
+"cross": "0",
+"reserve": "166",
+"reinvest": "267"
+}
+},
+{
+"input": {
+"gross": "1000",
+"deficit": "2000",
+"tax": 500,
+"rv": 4000,
+"vt": 3500,
+"cx": 0,
+"rs": 2500,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "1000",
+"eligible": "0",
+"tax": "0",
+"vault": "0",
+"cross": "0",
+"reserve": "0",
+"reinvest": "0"
+}
+},
+{
+"input": {
+"gross": "1000",
+"deficit": "0",
+"tax": 0,
+"rv": 10000,
+"vt": 0,
+"cx": 0,
+"rs": 0,
+"minTicket": "2000"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "0",
+"tax": "0",
+"vault": "0",
+"cross": "0",
+"reserve": "0",
+"reinvest": "0"
+}
+},
+{
+"input": {
+"gross": "0",
+"deficit": "0",
+"tax": 0,
+"rv": 10000,
+"vt": 0,
+"cx": 0,
+"rs": 0,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "0",
+"tax": "0",
+"vault": "0",
+"cross": "0",
+"reserve": "0",
+"reinvest": "0"
+}
+},
+{
+"input": {
+"gross": "682555",
+"deficit": "0",
+"tax": 614,
+"rv": 2471,
+"vt": 2834,
+"cx": 1163,
+"rs": 3532,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "682555",
+"tax": "41908",
+"vault": "181559",
+"cross": "74507",
+"reserve": "226276",
+"reinvest": "158305"
+}
+},
+{
+"input": {
+"gross": "95120",
+"deficit": "29260",
+"tax": 9551,
+"rv": 1144,
+"vt": 2799,
+"cx": 2908,
+"rs": 3149,
+"minTicket": "1013"
+},
+"expected": {
+"deficitRecovered": "29260",
+"eligible": "65860",
+"tax": "62902",
+"vault": "827",
+"cross": "860",
+"reserve": "931",
+"reinvest": "340"
+}
+},
+{
+"input": {
+"gross": "231822",
+"deficit": "0",
+"tax": 9353,
+"rv": 812,
+"vt": 5687,
+"cx": 3094,
+"rs": 407,
+"minTicket": "5054"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "231822",
+"tax": "216823",
+"vault": "8529",
+"cross": "4640",
+"reserve": "610",
+"reinvest": "1220"
+}
+},
+{
+"input": {
+"gross": "598952",
+"deficit": "71793",
+"tax": 1028,
+"rv": 1688,
+"vt": 1273,
+"cx": 6567,
+"rs": 472,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "71793",
+"eligible": "527159",
+"tax": "54191",
+"vault": "60208",
+"cross": "310598",
+"reserve": "22324",
+"reinvest": "79838"
+}
+},
+{
+"input": {
+"gross": "61135224678320207641",
+"deficit": "0",
+"tax": 4070,
+"rv": 3374,
+"vt": 4759,
+"cx": 578,
+"rs": 1289,
+"minTicket": "2945"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "61135224678320207641",
+"tax": "24882036444076324509",
+"vault": "17252892280676663982",
+"cross": "2095434279939296445",
+"reserve": "4673035963394036535",
+"reinvest": "12231825710233886170"
+}
+},
+{
+"input": {
+"gross": "68796122730974807502",
+"deficit": "0",
+"tax": 1934,
+"rv": 1341,
+"vt": 2658,
+"cx": 5412,
+"rs": 589,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "68796122730974807502",
+"tax": "13305170136170527770",
+"vault": "14749495199698977552",
+"cross": "30031703544308076190",
+"reserve": "3268417107833972076",
+"reinvest": "7441336742963253914"
+}
+},
+{
+"input": {
+"gross": "978605",
+"deficit": "73148",
+"tax": 5140,
+"rv": 2490,
+"vt": 212,
+"cx": 2902,
+"rs": 4396,
+"minTicket": "5572"
+},
+"expected": {
+"deficitRecovered": "73148",
+"eligible": "905457",
+"tax": "465404",
+"vault": "9329",
+"cross": "127703",
+"reserve": "193447",
+"reinvest": "109574"
+}
+},
+{
+"input": {
+"gross": "608065",
+"deficit": "0",
+"tax": 1064,
+"rv": 5737,
+"vt": 2400,
+"cx": 1601,
+"rs": 262,
+"minTicket": "994"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "608065",
+"tax": "64698",
+"vault": "130408",
+"cross": "86993",
+"reserve": "14236",
+"reinvest": "311730"
+}
+},
+{
+"input": {
+"gross": "6401117268241863455",
+"deficit": "0",
+"tax": 1918,
+"rv": 5072,
+"vt": 2229,
+"cx": 2168,
+"rs": 531,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "6401117268241863455",
+"tax": "1227734292048789410",
+"vault": "1153147065393436204",
+"cross": "1121589429238658452",
+"reserve": "274706636035852231",
+"reinvest": "2623939845525127158"
+}
+},
+{
+"input": {
+"gross": "62680148880845418372",
+"deficit": "0",
+"tax": 7359,
+"rv": 2119,
+"vt": 1456,
+"cx": 1134,
+"rs": 5291,
+"minTicket": "6580"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "62680148880845418372",
+"tax": "46126321561414143379",
+"vault": "2410237257709193638",
+"cross": "1877204018023506584",
+"reserve": "8758630034711087598",
+"reinvest": "3507756008987487173"
+}
+},
+{
+"input": {
+"gross": "97369682451476721760",
+"deficit": "47024",
+"tax": 6233,
+"rv": 2243,
+"vt": 2309,
+"cx": 2501,
+"rs": 2947,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "47024",
+"eligible": "97369682451476674736",
+"tax": "60690523072005411362",
+"vault": "8469217900719914713",
+"cross": "9173457760805762969",
+"reserve": "10809348269130181316",
+"reinvest": "8227135448815404376"
+}
+},
+{
+"input": {
+"gross": "4304291062942567562",
+"deficit": "0",
+"tax": 4304,
+"rv": 1359,
+"vt": 1119,
+"cx": 409,
+"rs": 7113,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "4304291062942567562",
+"tax": "1852566873490481078",
+"vault": "274347936799688477",
+"cross": "100275519348590337",
+"reserve": "1743911415957269116",
+"reinvest": "333189317346538554"
+}
+},
+{
+"input": {
+"gross": "387191",
+"deficit": "90504",
+"tax": 884,
+"rv": 2386,
+"vt": 4478,
+"cx": 1894,
+"rs": 1242,
+"minTicket": "7481"
+},
+"expected": {
+"deficitRecovered": "90504",
+"eligible": "296687",
+"tax": "26227",
+"vault": "121111",
+"cross": "51225",
+"reserve": "33591",
+"reinvest": "64533"
+}
+},
+{
+"input": {
+"gross": "57250154477991038126",
+"deficit": "0",
+"tax": 1103,
+"rv": 6428,
+"vt": 93,
+"cx": 2642,
+"rs": 837,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "57250154477991038126",
+"tax": "6314692038922411505",
+"vault": "473699800683338227",
+"cross": "13457149176401931153",
+"reserve": "4263298206150044048",
+"reinvest": "32741315255833313193"
+}
+},
+{
+"input": {
+"gross": "629909",
+"deficit": "0",
+"tax": 5957,
+"rv": 1801,
+"vt": 858,
+"cx": 2912,
+"rs": 4429,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "629909",
+"tax": "375236",
+"vault": "21850",
+"cross": "74160",
+"reserve": "112794",
+"reinvest": "45869"
+}
+},
+{
+"input": {
+"gross": "54518762328909149919",
+"deficit": "0",
+"tax": 1889,
+"rv": 2433,
+"vt": 974,
+"cx": 2757,
+"rs": 3836,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "54518762328909149919",
+"tax": "10298594203930938419",
+"vault": "4307044375372877800",
+"cross": "12191500352056492910",
+"reserve": "16962856492741641931",
+"reinvest": "10758766904807198859"
+}
+},
+{
+"input": {
+"gross": "94118749161392497243",
+"deficit": "0",
+"tax": 7841,
+"rv": 5109,
+"vt": 2761,
+"cx": 57,
+"rs": 2073,
+"minTicket": "2645"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "94118749161392497243",
+"tax": "73798511217447857088",
+"vault": "5610417696323115146",
+"cross": "115825356280484448",
+"reserve": "4212385325779723904",
+"reinvest": "10381609565561316657"
+}
+},
+{
+"input": {
+"gross": "379325",
+"deficit": "99371",
+"tax": 4883,
+"rv": 378,
+"vt": 2984,
+"cx": 5292,
+"rs": 1346,
+"minTicket": "1491"
+},
+"expected": {
+"deficitRecovered": "99371",
+"eligible": "279954",
+"tax": "136701",
+"vault": "42746",
+"cross": "75809",
+"reserve": "19281",
+"reinvest": "5417"
+}
+},
+{
+"input": {
+"gross": "83611571890697073192",
+"deficit": "0",
+"tax": 3197,
+"rv": 4278,
+"vt": 1730,
+"cx": 2485,
+"rs": 1507,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "83611571890697073192",
+"tax": "26730619533455854299",
+"vault": "9840404757802730868",
+"cross": "14134916660774442894",
+"reserve": "8571959520236251687",
+"reinvest": "24333671418427793444"
+}
+},
+{
+"input": {
+"gross": "516720",
+"deficit": "0",
+"tax": 4246,
+"rv": 3275,
+"vt": 439,
+"cx": 4766,
+"rs": 1520,
+"minTicket": "3172"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "516720",
+"tax": "219399",
+"vault": "13052",
+"cross": "141703",
+"reserve": "45192",
+"reinvest": "97374"
+}
+},
+{
+"input": {
+"gross": "847843",
+"deficit": "0",
+"tax": 3222,
+"rv": 5640,
+"vt": 1687,
+"cx": 2587,
+"rs": 86,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "847843",
+"tax": "273175",
+"vault": "96946",
+"cross": "148666",
+"reserve": "4942",
+"reinvest": "324114"
+}
+},
+{
+"input": {
+"gross": "502765",
+"deficit": "0",
+"tax": 6365,
+"rv": 31,
+"vt": 7876,
+"cx": 2091,
+"rs": 2,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "502765",
+"tax": "320009",
+"vault": "143938",
+"cross": "38214",
+"reserve": "36",
+"reinvest": "568"
+}
+},
+{
+"input": {
+"gross": "62642163702490038651",
+"deficit": "0",
+"tax": 2602,
+"rv": 2924,
+"vt": 2523,
+"cx": 1662,
+"rs": 2891,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "62642163702490038651",
+"tax": "16299490995387908056",
+"vault": "11692256324001867549",
+"cross": "7702152203920374104",
+"reserve": "13397666679623225955",
+"reinvest": "13550597499556662987"
+}
+},
+{
+"input": {
+"gross": "73423685105685820412",
+"deficit": "20435",
+"tax": 8983,
+"rv": 451,
+"vt": 2025,
+"cx": 7203,
+"rs": 321,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "20435",
+"eligible": "73423685105685799977",
+"tax": "65956496330437554119",
+"vault": "1512105726987769786",
+"cross": "5378616074811311491",
+"reserve": "239696759685468692",
+"reinvest": "336770213763695889"
+}
+},
+{
+"input": {
+"gross": "785904",
+"deficit": "0",
+"tax": 4126,
+"rv": 233,
+"vt": 1450,
+"cx": 6944,
+"rs": 1373,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "785904",
+"tax": "324263",
+"vault": "66937",
+"cross": "320563",
+"reserve": "63383",
+"reinvest": "10758"
+}
+},
+{
+"input": {
+"gross": "341825",
+"deficit": "7982",
+"tax": 5796,
+"rv": 3940,
+"vt": 4271,
+"cx": 1397,
+"rs": 392,
+"minTicket": "7506"
+},
+"expected": {
+"deficitRecovered": "7982",
+"eligible": "333843",
+"tax": "193495",
+"vault": "59942",
+"cross": "19606",
+"reserve": "5501",
+"reinvest": "55299"
+}
+},
+{
+"input": {
+"gross": "867319",
+"deficit": "0",
+"tax": 8577,
+"rv": 6891,
+"vt": 1575,
+"cx": 1091,
+"rs": 443,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "867319",
+"tax": "743899",
+"vault": "19438",
+"cross": "13465",
+"reserve": "5467",
+"reinvest": "85050"
+}
+},
+{
+"input": {
+"gross": "4124",
+"deficit": "0",
+"tax": 1971,
+"rv": 3000,
+"vt": 4211,
+"cx": 2759,
+"rs": 30,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "4124",
+"tax": "812",
+"vault": "1394",
+"cross": "913",
+"reserve": "9",
+"reinvest": "996"
+}
+},
+{
+"input": {
+"gross": "582424",
+"deficit": "0",
+"tax": 4537,
+"rv": 5340,
+"vt": 3152,
+"cx": 203,
+"rs": 1305,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "582424",
+"tax": "264245",
+"vault": "100290",
+"cross": "6459",
+"reserve": "41522",
+"reinvest": "169908"
+}
+},
+{
+"input": {
+"gross": "29220",
+"deficit": "0",
+"tax": 7411,
+"rv": 7408,
+"vt": 910,
+"cx": 885,
+"rs": 797,
+"minTicket": "8325"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "29220",
+"tax": "21654",
+"vault": "688",
+"cross": "669",
+"reserve": "603",
+"reinvest": "5606"
+}
+},
+{
+"input": {
+"gross": "733184",
+"deficit": "0",
+"tax": 6826,
+"rv": 4057,
+"vt": 3775,
+"cx": 487,
+"rs": 1681,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "733184",
+"tax": "500471",
+"vault": "87849",
+"cross": "11333",
+"reserve": "39119",
+"reinvest": "94412"
+}
+},
+{
+"input": {
+"gross": "703758",
+"deficit": "0",
+"tax": 2004,
+"rv": 1188,
+"vt": 3989,
+"cx": 2066,
+"rs": 2757,
+"minTicket": "2530"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "703758",
+"tax": "141033",
+"vault": "224471",
+"cross": "116258",
+"reserve": "155143",
+"reinvest": "66853"
+}
+},
+{
+"input": {
+"gross": "925718",
+"deficit": "0",
+"tax": 6525,
+"rv": 2342,
+"vt": 1804,
+"cx": 1853,
+"rs": 4001,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "925718",
+"tax": "604030",
+"vault": "58032",
+"cross": "59608",
+"reserve": "128707",
+"reinvest": "75341"
+}
+},
+{
+"input": {
+"gross": "540652",
+"deficit": "0",
+"tax": 1510,
+"rv": 2645,
+"vt": 1020,
+"cx": 3405,
+"rs": 2930,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "540652",
+"tax": "81638",
+"vault": "46819",
+"cross": "156294",
+"reserve": "134491",
+"reinvest": "121410"
+}
+},
+{
+"input": {
+"gross": "55673785874051611270",
+"deficit": "67821",
+"tax": 4840,
+"rv": 5537,
+"vt": 1977,
+"cx": 1563,
+"rs": 923,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "67821",
+"eligible": "55673785874051543449",
+"tax": "26946112363040947029",
+"vault": "5679461053126794912",
+"cross": "4490135369770956220",
+"reserve": "2651564265066278049",
+"reinvest": "15906512823046567239"
+}
+},
+{
+"input": {
+"gross": "88145",
+"deficit": "0",
+"tax": 6918,
+"rv": 1716,
+"vt": 132,
+"cx": 1896,
+"rs": 6256,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "88145",
+"tax": "60978",
+"vault": "358",
+"cross": "5150",
+"reserve": "16995",
+"reinvest": "4664"
+}
+},
+{
+"input": {
+"gross": "598313",
+"deficit": "0",
+"tax": 3003,
+"rv": 2447,
+"vt": 5987,
+"cx": 357,
+"rs": 1209,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "598313",
+"tax": "179673",
+"vault": "250639",
+"cross": "14945",
+"reserve": "50613",
+"reinvest": "102443"
+}
+},
+{
+"input": {
+"gross": "840569",
+"deficit": "0",
+"tax": 1993,
+"rv": 275,
+"vt": 1176,
+"cx": 2955,
+"rs": 5594,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "840569",
+"tax": "167525",
+"vault": "79149",
+"cross": "198884",
+"reserve": "376500",
+"reinvest": "18511"
+}
+},
+{
+"input": {
+"gross": "971684",
+"deficit": "5663",
+"tax": 3906,
+"rv": 5556,
+"vt": 1288,
+"cx": 2217,
+"rs": 939,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "5663",
+"eligible": "966021",
+"tax": "377327",
+"vault": "75823",
+"cross": "130513",
+"reserve": "55278",
+"reinvest": "327080"
+}
+},
+{
+"input": {
+"gross": "97988964368664476517",
+"deficit": "0",
+"tax": 4750,
+"rv": 825,
+"vt": 2142,
+"cx": 1323,
+"rs": 5710,
+"minTicket": "7302"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "97988964368664476517",
+"tax": "46544758075115626345",
+"vault": "11019348988078163706",
+"cross": "6806068492636512877",
+"reserve": "29374641793616393448",
+"reinvest": "4244147019217780141"
+}
+},
+{
+"input": {
+"gross": "842719",
+"deficit": "0",
+"tax": 8284,
+"rv": 2914,
+"vt": 1518,
+"cx": 1253,
+"rs": 4315,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "842719",
+"tax": "698108",
+"vault": "21951",
+"cross": "18119",
+"reserve": "62399",
+"reinvest": "42142"
+}
+},
+{
+"input": {
+"gross": "94194265167477488541",
+"deficit": "0",
+"tax": 8944,
+"rv": 4025,
+"vt": 3753,
+"cx": 647,
+"rs": 1575,
+"minTicket": "6440"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "94194265167477488541",
+"tax": "84247350765791865751",
+"vault": "3733076974952614233",
+"cross": "643565361789059794",
+"reserve": "1566639018265485589",
+"reinvest": "4003633046678463174"
+}
+},
+{
+"input": {
+"gross": "359352",
+"deficit": "0",
+"tax": 4187,
+"rv": 3525,
+"vt": 236,
+"cx": 1281,
+"rs": 4958,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "359352",
+"tax": "150460",
+"vault": "4929",
+"cross": "26759",
+"reserve": "103568",
+"reinvest": "73636"
+}
+},
+{
+"input": {
+"gross": "29492256210441521039",
+"deficit": "0",
+"tax": 3036,
+"rv": 907,
+"vt": 477,
+"cx": 4856,
+"rs": 3760,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "29492256210441521039",
+"tax": "8953848985490045787",
+"vault": "979682024630185369",
+"cross": "9973450548436436382",
+"reserve": "7722441116581754694",
+"reinvest": "1862833535303098807"
+}
+},
+{
+"input": {
+"gross": "381830",
+"deficit": "0",
+"tax": 3569,
+"rv": 59,
+"vt": 4253,
+"cx": 2992,
+"rs": 2696,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "381830",
+"tax": "136275",
+"vault": "104434",
+"cross": "73470",
+"reserve": "66201",
+"reinvest": "1450"
+}
+},
+{
+"input": {
+"gross": "87966",
+"deficit": "32529",
+"tax": 81,
+"rv": 17,
+"vt": 5477,
+"cx": 758,
+"rs": 3748,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "32529",
+"eligible": "55437",
+"tax": "449",
+"vault": "30116",
+"cross": "4168",
+"reserve": "20609",
+"reinvest": "95"
+}
+},
+{
+"input": {
+"gross": "7267623232435040130",
+"deficit": "39877",
+"tax": 3814,
+"rv": 1470,
+"vt": 887,
+"cx": 4188,
+"rs": 3455,
+"minTicket": "1384"
+},
+"expected": {
+"deficitRecovered": "39877",
+"eligible": "7267623232435000253",
+"tax": "2771871500850709096",
+"vault": "398773178591526625",
+"cross": "1882820825187501136",
+"reserve": "1553282223262372594",
+"reinvest": "660875504542890802"
+}
+},
+{
+"input": {
+"gross": "98249844650052020362",
+"deficit": "0",
+"tax": 2371,
+"rv": 2543,
+"vt": 6127,
+"cx": 1104,
+"rs": 226,
+"minTicket": "717"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "98249844650052020362",
+"tax": "23295038166527334027",
+"vault": "45924809932455575317",
+"cross": "8275010635781125371",
+"reserve": "1693978626527657911",
+"reinvest": "19061007288760327736"
+}
+},
+{
+"input": {
+"gross": "146075",
+"deficit": "0",
+"tax": 685,
+"rv": 7032,
+"vt": 1250,
+"cx": 122,
+"rs": 1596,
+"minTicket": "2180"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "146075",
+"tax": "10006",
+"vault": "17008",
+"cross": "1660",
+"reserve": "21716",
+"reinvest": "95685"
+}
+},
+{
+"input": {
+"gross": "876423",
+"deficit": "82080",
+"tax": 4006,
+"rv": 1718,
+"vt": 4191,
+"cx": 261,
+"rs": 3830,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "82080",
+"eligible": "794343",
+"tax": "318213",
+"vault": "199546",
+"cross": "12426",
+"reserve": "182357",
+"reinvest": "81801"
+}
+},
+{
+"input": {
+"gross": "784614",
+"deficit": "97744",
+"tax": 7763,
+"rv": 54,
+"vt": 1094,
+"cx": 6338,
+"rs": 2514,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "97744",
+"eligible": "686870",
+"tax": "533217",
+"vault": "16809",
+"cross": "97385",
+"reserve": "38628",
+"reinvest": "831"
+}
+},
+{
+"input": {
+"gross": "56755833098273258450",
+"deficit": "6127",
+"tax": 3248,
+"rv": 3362,
+"vt": 484,
+"cx": 504,
+"rs": 5650,
+"minTicket": "1269"
+},
+"expected": {
+"deficitRecovered": "6127",
+"eligible": "56755833098273252323",
+"tax": "18434294590319152354",
+"vault": "1854762463784978438",
+"cross": "1931405540800886638",
+"reserve": "21651669256994066482",
+"reinvest": "12883701246374168411"
+}
+},
+{
+"input": {
+"gross": "683184",
+"deficit": "0",
+"tax": 993,
+"rv": 2415,
+"vt": 1745,
+"cx": 1275,
+"rs": 4565,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "683184",
+"tax": "67840",
+"vault": "107377",
+"cross": "78456",
+"reserve": "280904",
+"reinvest": "148607"
+}
+},
+{
+"input": {
+"gross": "46421889902846709917",
+"deficit": "0",
+"tax": 1941,
+"rv": 1630,
+"vt": 1936,
+"cx": 4455,
+"rs": 1979,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "46421889902846709917",
+"tax": "9010488830142546394",
+"vault": "7242847247675526058",
+"cross": "16666779177889704849",
+"reserve": "7403716272288153961",
+"reinvest": "6098058374850778655"
+}
+},
+{
+"input": {
+"gross": "8466517410913091386",
+"deficit": "0",
+"tax": 3437,
+"rv": 1406,
+"vt": 3700,
+"cx": 2642,
+"rs": 2252,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "8466517410913091386",
+"tax": "2909942034130829509",
+"vault": "2055932889409436894",
+"cross": "1468047214545873587",
+"reserve": "1251340774851365374",
+"reinvest": "781254497975586022"
+}
+},
+{
+"input": {
+"gross": "76233108064358347792",
+"deficit": "14768",
+"tax": 5983,
+"rv": 1479,
+"vt": 843,
+"cx": 7204,
+"rs": 474,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "14768",
+"eligible": "76233108064358333024",
+"tax": "45610268554905590648",
+"vault": "2581505370646866182",
+"cross": "22060693582609755607",
+"reserve": "1451522592748059988",
+"reinvest": "4529117963448060599"
+}
+},
+{
+"input": {
+"gross": "72863893286418075154",
+"deficit": "0",
+"tax": 2305,
+"rv": 406,
+"vt": 6050,
+"cx": 1508,
+"rs": 2036,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "72863893286418075154",
+"tax": "16795127402519366322",
+"vault": "33921603359758718843",
+"cross": "8455169895291925291",
+"reserve": "11415600733961777118",
+"reinvest": "2276391894886287580"
+}
+},
+{
+"input": {
+"gross": "36925610947983289452",
+"deficit": "0",
+"tax": 3207,
+"rv": 1980,
+"vt": 3198,
+"cx": 984,
+"rs": 3838,
+"minTicket": "192"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "36925610947983289452",
+"tax": "11842043431018240927",
+"vault": "8021724891925422518",
+"cross": "2468223043669360774",
+"reserve": "9627073213011185623",
+"reinvest": "4966546368359079610"
+}
+},
+{
+"input": {
+"gross": "10868391033750059752",
+"deficit": "0",
+"tax": 790,
+"rv": 4148,
+"vt": 600,
+"cx": 1350,
+"rs": 3902,
+"minTicket": "0"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "10868391033750059752",
+"tax": "858602891666254720",
+"vault": "600587288525028301",
+"cross": "1351321399181313679",
+"reserve": "3905819333041100723",
+"reinvest": "4152060121336362329"
+}
+},
+{
+"input": {
+"gross": "60242048932453416022",
+"deficit": "0",
+"tax": 7008,
+"rv": 845,
+"vt": 1594,
+"cx": 2240,
+"rs": 5321,
+"minTicket": "475"
+},
+"expected": {
+"deficitRecovered": "0",
+"eligible": "60242048932453416022",
+"tax": "42217627891863353948",
+"vault": "2873092713870055894",
+"cross": "4037470313092173904",
+"reserve": "9590794435697972029",
+"reinvest": "1523063577929860247"
+}
+}
+]
